@@ -174,10 +174,10 @@
 
 ;;; YASnippet
 (require 'yasnippet)
-(yas-global-mode 1)
-;;; We always use M-/ for completions
-(define-key yas-minor-mode-map [(tab)] nil)
-(define-key yas-minor-mode-map (kbd "TAB") nil)
+;; (yas-global-mode 1)
+;; We always use M-/ for completions
+;; (define-key yas-minor-mode-map [(tab)] nil)
+;; (define-key yas-minor-mode-map (kbd "TAB") nil)
 
 
 ;; RTAGS is Great for C++ navigation, refactoring and autocompletion
@@ -209,7 +209,7 @@
   (define-key c-mode-base-map (kbd "M-]") 'rtags-location-stack-forward)
   (define-key c-mode-base-map (kbd "M-n") 'rtags-next-match)
   (define-key c-mode-base-map (kbd "M-p") 'rtags-previous-match)
-
+  (define-key c-mode-base-map (kbd "M-/") 'company-complete)
 )
 
 (add-hook 'c++-mode-hook 'my-rtags-c++-mode-hook)
@@ -221,12 +221,11 @@
 
 
 ;;; Python
-
-
 (defun my-python-hook()
   (jedi:setup)
   (company-mode)
-  (add-to-list 'company-backends 'company-jedi))
+  (define-key python-mode-map (kbd "M-/") 'company-complete)
+  (setq company-backends '(company-jedi company-yasnippet)))
 
 (add-hook 'python-mode-hook 'my-python-hook)
 (setq jedi:complete-on-dot t)
