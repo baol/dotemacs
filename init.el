@@ -1,10 +1,20 @@
 ;; Required packages (rtags needs to be installed separately)
-(setq package-list 
-      '(zenburn-theme minimap ido-ubiquitous ethan-wspace yasnippet web-mode popup company markdown-mode+))
+(setq package-list '(
+                     zenburn-theme
+                     minimap
+                     ido-ubiquitous
+                     ethan-wspace
+                     yasnippet
+                     web-mode
+                     popup
+                     company
+                     markdown-mode+
+                     powerline
+                     ))
 
 (require 'package)
 (add-to-list 'package-archives
-             '("melpa" . "http://melpa.org/packages/") t)
+             '("melpa-stable" . "https://stable.melpa.org/packages/") t)
 (package-initialize)
 
 ;; Autoinstall packages
@@ -117,6 +127,8 @@
 (require 'minimap)
 (minimap-mode)
 
+;;; Powerline!
+(powerline-default-theme)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; Language specific settings
