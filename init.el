@@ -1,6 +1,6 @@
 ;; Required packages (rtags needs to be installed separately)
 (setq package-list 
-      '(zenburn-theme minimap ido-ubiquitous ethan-wspace yasnippet web-mode popup company))
+      '(zenburn-theme minimap ido-ubiquitous ethan-wspace yasnippet web-mode popup company markdown-mode+))
 
 (require 'package)
 (add-to-list 'package-archives
