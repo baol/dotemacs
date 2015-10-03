@@ -25,7 +25,7 @@ well (and of course to create the index for your project).
 
 On Ubuntu you'll need some other packages to make it work:
 
-    sudo apt-get install markdown python-virtualenv
+    sudo apt-get install markdown python-virtualenv clang-format-3.6
 
 ## note
 

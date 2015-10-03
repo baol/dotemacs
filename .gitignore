@@ -6,3 +6,9 @@ confidential.el
 
 # Packaging
 .cask
+.python-environments/
+elpa/
+
+# Random
+auto-save-alist/
+*~

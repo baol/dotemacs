@@ -8,15 +8,14 @@
 ;;;
 ;;;             M-/  completes
 ;;;             M-.  goes to definition/declaration
-;;;             M-,  finds next usage
-;;;             M-]  goes back
+;;;             M-,  next
+;;;             M-[  goes back
 ;;;
 ;;; Code:
 
 ;; Required packages (rtags needs to be installed separately)
 (defvar package-list '(
                        zenburn-theme
-                       minimap
                        ido-ubiquitous
                        ethan-wspace
                        yasnippet
@@ -29,6 +28,10 @@
                        flycheck
                        rainbow-mode
                        visual-regexp
+                       highlight-symbol
+                       clang-format
+                       cmake-mode
+                       indent-guide
                        ))
 
 (require 'package)
@@ -80,7 +83,6 @@
 ;; Try M-q on a long paragraph in a text file or C++ comment!
 (add-hook 'text-mode-hook 'turn-on-auto-fill)
 
-
 ;; Font settings
 (require 'cl-lib)
 (defun font-candidate (&rest fonts)
@@ -127,10 +129,9 @@
     ;; from the screen height (for panels, menubars and
     ;; whatnot), then divide by the height of a char to
     ;; get the height we want
-    (add-to-list 'default-frame-alist 
+    (add-to-list 'default-frame-alist
          (cons 'height (/ (+ (x-display-pixel-height) 60)
                              (frame-char-height)))))))
-
 (defun toggle-fullscreen ()
   "Toggle full screen on X11"
   (interactive)
@@ -138,20 +139,14 @@
     (set-frame-parameter
      nil 'fullscreen
      (when (not (frame-parameter nil 'fullscreen)) 'fullboth))))
-
 (defun fullscreen ()
-       (interactive)
-       (x-send-client-message nil 0 nil "_NET_WM_STATE" 32
+  (interactive)
+  (x-send-client-message nil 0 nil "_NET_WM_STATE" 32
                          '(2 "_NET_WM_STATE_FULLSCREEN" 0)))
-
-(global-set-key [f11] 'toggle-fullscreen)
-
 (setq-default indent-tabs-mode nil)
 (set-frame-size-according-to-resolution)
+(global-set-key [f11] 'toggle-fullscreen)
 
-;; Some sublimity
-(require 'minimap)
-(minimap-mode)
 
 ;; Powerline!
 (powerline-default-theme)
@@ -181,21 +176,16 @@
 ;; C++ hook
 (defun my-c++-mode-hook ()
   "My C++ setting."
-  (minimap-mode)                ;; use the minimap
   (goto-address-prog-mode)      ;; click on links and emails
   (flyspell-prog-mode)          ;; spell check the comments
   (flycheck-mode)
   (eldoc-mode)
-  (company-mode)                ;; complete anything
   (setq indent-tabs-mode nil)
+  (highlight-symbol-mode)
+  (setq mode-require-final-newline nil)
   (define-key c-mode-base-map "\C-c\C-c" 'compile)
   (define-key c-mode-base-map "\C-i" 'c-indent-line-or-region)
   )
-
-
-;; Extend C++ extensions
-(add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
-(add-to-list 'auto-mode-alist '("\\.inl\\'" . c++-mode))
 
 (add-hook 'c++-mode-hook 'my-c++-mode-hook)
 
@@ -208,17 +198,13 @@
 
 (defun my-rtags-c++-mode-hook ()
   "C++ setting for rtags."
-
   (rtags-start-process-maybe)
-
   (setq company-backends '(company-rtags company-yasnippet))
-
   (setq rtags-completions-enabled t
         rtags-display-current-error-as-tooltip t
         rtags-autostart-diagnostics t
         rtags-show-containing-function t
         rtags-track-container t)
-
   (define-key c-mode-base-map (kbd "M-.") 'rtags-find-symbol-at-point)
   (define-key c-mode-base-map (kbd "M-,") 'rtags-find-references-at-point)
   (define-key c-mode-base-map (kbd "M-;") 'rtags-find-file)
@@ -231,10 +217,22 @@
   (define-key c-mode-base-map (kbd "M-]") 'rtags-location-stack-forward)
   (define-key c-mode-base-map (kbd "M-n") 'rtags-next-match)
   (define-key c-mode-base-map (kbd "M-p") 'rtags-previous-match)
-  (define-key c-mode-base-map (kbd "M-/") 'company-complete)
 )
 
 (add-hook 'c++-mode-hook 'my-rtags-c++-mode-hook)
+
+
+;; Add header line with current method
+(setq rtags-track-container t)
+(add-hook 'find-file-hook (lambda ()
+                            (setq header-line-format (and (rtags-is-indexed)
+                                                          '(:eval
+                                                            rtags-cached-current-container)))))
+
+
+;; clang-format intergation
+(require 'clang-format)
+(define-key c-mode-base-map (kbd "M-q") (function clang-format-region))
 
 
 ;; Better www mode with javascript, css, php and html support, all on
@@ -245,15 +243,48 @@
 ;; Python
 (defun my-python-hook()
   (jedi:setup)
-  (company-mode)
   (eldoc-mode)
   (flycheck-mode)
-  (define-key python-mode-map (kbd "M-/") 'company-complete)
-  (setq company-backends '(company-jedi company-yasnippet)))
+  (setq mode-require-final-newline nil)
+  (setq company-backends '(company-jedi company-yasnippet))
+  (define-key python-mode-map (kbd "M-.") 'jedi:goto-definition)
+  (define-key python-mode-map (kbd "M-,") 'jedi:goto-definition-next)
+  (define-key python-mode-map (kbd "M-[") 'jedi:goto-definition-pop-marker)
+)
 
 (add-hook 'python-mode-hook 'my-python-hook)
 (setq jedi:complete-on-dot t)
 
+;; Extend C++ extensions
+(add-to-list 'auto-mode-alist '("\\.cc\\'" . c++-mode))
+(add-to-list 'auto-mode-alist '("\\.cpp\\'" . c++-mode))
+(add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
+(add-to-list 'auto-mode-alist '("\\.hh\\'" . c++-mode))
+(add-to-list 'auto-mode-alist '("\\.hpp\\'" . c++-mode))
+(add-to-list 'auto-mode-alist '("\\.inl\\'" . c++-mode))
+
+
+(defun my-prog-mode-hook()
+  (font-lock-add-keywords
+   nil '(("\\<\\(FIX\\(ME\\)?\\|TODO\\|HACK\\|REFACTOR\\|NOCOMMIT\\)"
+          1 font-lock-warning-face t)))
+  (highlight-symbol-mode)
+  (rainbow-mode)
+  (indent-guide-mode)
+  (hl-line-mode t)
+  (company-mode)
+  (define-key prog-mode-map (kbd "M-/") 'company-complete)
+  )
+
+(add-hook 'prog-mode-hook 'my-prog-mode-hook)
+
 ;;; init.el ends here
 ;;
 ;;  LocalWords:  init LocalWords baol's dotemacs rtags el
+
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(font-lock-warning-face ((t (:inherit error :foreground "#FF2F2F" :weight bold)))))
