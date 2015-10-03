@@ -21,9 +21,15 @@ the instructions on the related site.
 You can install rtags from source, remember to make install as
 well (and of course to create the index for your project).
 
+## other dependencies
+
+On Ubuntu you'll need some other packages to make it work:
+
+    sudo apt-get install markdown python-virtualenv
+
 ## note
 
-This package is here for my convenience (setting up emacs quickly
+This repository is here for my convenience (setting up emacs quickly
 between machines) but it will turn your emacs into a powerful
 development environment for C++ as well!
 

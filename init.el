@@ -161,7 +161,6 @@
   (flyspell-prog-mode)          ;; spell check the comments
   (company-mode)                ;; complete anything
   (setq indent-tabs-mode nil)
-  (rtags-start-process-unless-running)
   (define-key c-mode-base-map "\C-c\C-c" 'compile)
   (define-key c-mode-base-map "\C-i" 'c-indent-line-or-region)
   )
@@ -176,6 +175,9 @@
 ;;; YASnippet
 (require 'yasnippet)
 (yas-global-mode 1)
+;;; We always use M-/ for completions
+(define-key yas-minor-mode-map [(tab)] nil)
+(define-key yas-minor-mode-map (kbd "TAB") nil)
 
 
 ;; RTAGS is Great for C++ navigation, refactoring and autocompletion
@@ -184,7 +186,10 @@
 
 (defun my-rtags-c++-mode-hook ()
   "C++ setting for rtags."
-  (setq company-backends '(company-rtags))
+
+  (rtags-start-process-maybe)
+
+  (setq company-backends '(company-rtags company-yasnippet))
 
   (setq rtags-completions-enabled t
         rtags-display-current-error-as-tooltip t
@@ -205,9 +210,9 @@
   (define-key c-mode-base-map (kbd "M-n") 'rtags-next-match)
   (define-key c-mode-base-map (kbd "M-p") 'rtags-previous-match)
 
-  (add-hook 'c++-mode-hook 'my-rtags-c++-mode-hook)
 )
 
+(add-hook 'c++-mode-hook 'my-rtags-c++-mode-hook)
 
 
 ;;; Better www mode with javascript, css, php and html support, all on
