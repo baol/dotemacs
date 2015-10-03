@@ -1,21 +1,39 @@
+;;; init.el -- baol's dotemacs file
+;;;
+;;; Commentary:
+;;;             A dotemacs for C++/HTML/python/robot-framework with
+;;;             (almost) consistent usage of company and key-bindings.
+;;;
+;;;             Most notably:
+;;;
+;;;             M-/  completes
+;;;             M-.  goes to definition/declaration
+;;;             M-,  finds next usage
+;;;             M-]  goes back
+;;;
+;;; Code:
+
 ;; Required packages (rtags needs to be installed separately)
-(setq package-list '(
-                     zenburn-theme
-                     minimap
-                     ido-ubiquitous
-;; waiting for ethan to join stable melpa repo: ethan-wspace
-                     yasnippet
-                     web-mode
-                     popup
-                     company
-                     company-jedi
-                     markdown-mode
-                     powerline
-                     ))
+(defvar package-list '(
+                       zenburn-theme
+                       minimap
+                       ido-ubiquitous
+                       ethan-wspace
+                       yasnippet
+                       web-mode
+                       popup
+                       company
+                       company-jedi
+                       markdown-mode+
+                       powerline
+                       flycheck
+                       rainbow-mode
+                       visual-regexp
+                       ))
 
 (require 'package)
 (add-to-list 'package-archives
-             '("melpa-stable" . "https://stable.melpa.org/packages/") t)
+             '("melpa" . "https://melpa.org/packages/"))
 (package-initialize)
 
 ;; Autoinstall packages
@@ -26,26 +44,26 @@
     (package-install package)))
 
 
-;;; Add some local include paths
+;; Add some local include paths
 (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/rtags/")
 
 
-;;; A side file to store informations that should not go on github
+;; A side file to store informations that should not go on github
 (load-file "~/.emacs.d/confidential.el")
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;; Common settings
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Common settings
+;;
 
 (require 'zenburn-theme)
 
-;;; Some generic settings
+;; Some generic settings
 (setq inhibit-startup-message t)
 (show-paren-mode t)
 (setq visible-bell t)
 
-;;; Increas/decrease font size with C-+, C--
+;; Increas/decrease font size with C-+, C--
 (global-set-key (kbd "<C-+>") 'text-scale-increase)
 (global-set-key (kbd "<C-kp-add>") 'text-scale-increase)
 (global-set-key (kbd "<C-=>") 'text-scale-increase)
@@ -63,11 +81,11 @@
 (add-hook 'text-mode-hook 'turn-on-auto-fill)
 
 
-;;;; Font settings
-(require 'cl)
+;; Font settings
+(require 'cl-lib)
 (defun font-candidate (&rest fonts)
-  "Return existing font which first match."
-  (find-if (lambda (f) (find-font (font-spec :name f))) fonts))
+  "Return existing font which first match in FONTS."
+  (cl-find-if (lambda (f) (find-font (font-spec :name f))) fonts))
 
 (set-face-attribute 'default nil :font
                     (font-candidate ' "Inconsolata-12"
@@ -76,7 +94,7 @@
                                       "Courier New-12"))
 
 
-;;;; Recent file list (M-x recentf-open-file)
+;; Recent file list (M-x recentf-open-file)
 (require 'recentf)
 (recentf-mode 1)
 (setq recentf-max-menu-items 25)
@@ -88,13 +106,14 @@
 
 
 ;; Check whitespaces wisely in all buffers
-;;(require 'ethan-wspace)
-;;(setq mode-require-final-newline nil)
-;;(global-ethan-wspace-mode 1)
+(require 'ethan-wspace)
+(setq mode-require-final-newline nil)
+(global-ethan-wspace-mode 1)
 
 
-;;;; Automatic window resizing and fullscreen mode
+;; Automatic window resizing and fullscreen mode
 (defun set-frame-size-according-to-resolution ()
+  "Re-size Emacs according to the current screen capabilities."
   (interactive)
   (if window-system
   (progn
@@ -113,27 +132,33 @@
                              (frame-char-height)))))))
 
 (defun toggle-fullscreen ()
+  "Toggle full screen on X11"
   (interactive)
-  (x-send-client-message nil 0 nil "_NET_WM_STATE" 32
-                 '(2 "_NET_WM_STATE_MAXIMIZED_VERT" 0))
-  (x-send-client-message nil 0 nil "_NET_WM_STATE" 32
-                 '(2 "_NET_WM_STATE_MAXIMIZED_HORZ" 0))
-)
+  (when (eq window-system 'x)
+    (set-frame-parameter
+     nil 'fullscreen
+     (when (not (frame-parameter nil 'fullscreen)) 'fullboth))))
+
+(defun fullscreen ()
+       (interactive)
+       (x-send-client-message nil 0 nil "_NET_WM_STATE" 32
+                         '(2 "_NET_WM_STATE_FULLSCREEN" 0)))
+
+(global-set-key [f11] 'toggle-fullscreen)
 
 (setq-default indent-tabs-mode nil)
 (set-frame-size-according-to-resolution)
 
-
-;;; Some sublimity
+;; Some sublimity
 (require 'minimap)
 (minimap-mode)
 
-;;; Powerline!
+;; Powerline!
 (powerline-default-theme)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;; Language specific settings
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Language specific settings
+;;
 
 ;; Markdown
 (add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
@@ -143,7 +168,7 @@
 (add-to-list 'auto-mode-alist '("\\.robot\\'" . robot-mode))
 
 
-;;;; Setup C++ like coding style
+;; Setup C++ like coding style
 (defconst my-cc-style
   '("bsd"
     (c-offsets-alist . ((innamespace . [0])))
@@ -153,12 +178,14 @@
 (setq c-default-style "my-cc-style")
 
 
-;;;; C++ hook
+;; C++ hook
 (defun my-c++-mode-hook ()
   "My C++ setting."
   (minimap-mode)                ;; use the minimap
   (goto-address-prog-mode)      ;; click on links and emails
   (flyspell-prog-mode)          ;; spell check the comments
+  (flycheck-mode)
+  (eldoc-mode)
   (company-mode)                ;; complete anything
   (setq indent-tabs-mode nil)
   (define-key c-mode-base-map "\C-c\C-c" 'compile)
@@ -166,19 +193,14 @@
   )
 
 
-;;;; Extend C++ extensions
+;; Extend C++ extensions
 (add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
 (add-to-list 'auto-mode-alist '("\\.inl\\'" . c++-mode))
 
 (add-hook 'c++-mode-hook 'my-c++-mode-hook)
 
-;;; YASnippet
+;; YASnippet
 (require 'yasnippet)
-;; (yas-global-mode 1)
-;; We always use M-/ for completions
-;; (define-key yas-minor-mode-map [(tab)] nil)
-;; (define-key yas-minor-mode-map (kbd "TAB") nil)
-
 
 ;; RTAGS is Great for C++ navigation, refactoring and autocompletion
 (require 'rtags)
@@ -215,17 +237,23 @@
 (add-hook 'c++-mode-hook 'my-rtags-c++-mode-hook)
 
 
-;;; Better www mode with javascript, css, php and html support, all on
-;;; the same file!
+;; Better www mode with javascript, css, php and html support, all on
+;; the same file!
 (require 'web-mode)
 
 
-;;; Python
+;; Python
 (defun my-python-hook()
   (jedi:setup)
   (company-mode)
+  (eldoc-mode)
+  (flycheck-mode)
   (define-key python-mode-map (kbd "M-/") 'company-complete)
   (setq company-backends '(company-jedi company-yasnippet)))
 
 (add-hook 'python-mode-hook 'my-python-hook)
 (setq jedi:complete-on-dot t)
+
+;;; init.el ends here
+;;
+;;  LocalWords:  init LocalWords baol's dotemacs rtags el
