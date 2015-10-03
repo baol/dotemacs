@@ -3,12 +3,13 @@
                      zenburn-theme
                      minimap
                      ido-ubiquitous
-                     ethan-wspace
+;; waiting for ethan to join stable melpa repo: ethan-wspace
                      yasnippet
                      web-mode
                      popup
                      company
-                     markdown-mode+
+                     company-jedi
+                     markdown-mode
                      powerline
                      ))
 
@@ -87,9 +88,9 @@
 
 
 ;; Check whitespaces wisely in all buffers
-(require 'ethan-wspace)
-(setq mode-require-final-newline nil)
-(global-ethan-wspace-mode 1)
+;;(require 'ethan-wspace)
+;;(setq mode-require-final-newline nil)
+;;(global-ethan-wspace-mode 1)
 
 
 ;;;; Automatic window resizing and fullscreen mode
@@ -134,6 +135,8 @@
 ;;;; Language specific settings
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; Markdown
+(add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
 
 ;; Robot Framework editing mode
 (load-file "~/.emacs.d/robot-mode/robot-mode.el")
@@ -153,11 +156,14 @@
 ;;;; C++ hook
 (defun my-c++-mode-hook ()
   "My C++ setting."
-  (goto-address-prog-mode)
-  (flyspell-prog-mode)
-  (company-mode)
+  (minimap-mode)                ;; use the minimap
+  (goto-address-prog-mode)      ;; click on links and emails
+  (flyspell-prog-mode)          ;; spell check the comments
+  (company-mode)                ;; complete anything
   (setq indent-tabs-mode nil)
   (rtags-start-process-unless-running)
+  (define-key c-mode-base-map "\C-c\C-c" 'compile)
+  (define-key c-mode-base-map "\C-i" 'c-indent-line-or-region)
   )
 
 
@@ -165,7 +171,6 @@
 (add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
 (add-to-list 'auto-mode-alist '("\\.inl\\'" . c++-mode))
 
-(add-hook 'c-initialization-hook 'my-c-hook)
 (add-hook 'c++-mode-hook 'my-c++-mode-hook)
 
 ;;; YASnippet
@@ -176,33 +181,47 @@
 ;; RTAGS is Great for C++ navigation, refactoring and autocompletion
 (require 'rtags)
 (require 'company-rtags)
-(setq company-backends '(company-rtags))
 
-(setq rtags-completions-enabled t
-      rtags-display-current-error-as-tooltip t
-      rtags-autostart-diagnostics t
-      rtags-show-containing-function t
-      rtags-track-container t)
+(defun my-rtags-c++-mode-hook ()
+  "C++ setting for rtags."
+  (setq company-backends '(company-rtags))
 
-(define-key c-mode-base-map (kbd "M-.") 'rtags-find-symbol-at-point)
-(define-key c-mode-base-map (kbd "M-,") 'rtags-find-references-at-point)
-(define-key c-mode-base-map (kbd "M-;") 'rtags-find-file)
-(define-key c-mode-base-map (kbd "C-.") 'rtags-find-symbol)
-(define-key c-mode-base-map (kbd "C-,") 'rtags-find-references)
-(define-key c-mode-base-map (kbd "C-<") 'rtags-find-virtuals-at-point)
-(define-key c-mode-base-map (kbd "M-s") 'rtags-imenu)
-(define-key c-mode-base-map (kbd "C-c r i") 'rtags-print-symbol-info)
-(define-key c-mode-base-map (kbd "M-[") 'rtags-location-stack-back)
-(define-key c-mode-base-map (kbd "M-]") 'rtags-location-stack-forward)
-(define-key c-mode-base-map (kbd "M-n") 'rtags-next-match)
-(define-key c-mode-base-map (kbd "M-p") 'rtags-previous-match)
+  (setq rtags-completions-enabled t
+        rtags-display-current-error-as-tooltip t
+        rtags-autostart-diagnostics t
+        rtags-show-containing-function t
+        rtags-track-container t)
 
+  (define-key c-mode-base-map (kbd "M-.") 'rtags-find-symbol-at-point)
+  (define-key c-mode-base-map (kbd "M-,") 'rtags-find-references-at-point)
+  (define-key c-mode-base-map (kbd "M-;") 'rtags-find-file)
+  (define-key c-mode-base-map (kbd "C-.") 'rtags-find-symbol)
+  (define-key c-mode-base-map (kbd "C-,") 'rtags-find-references)
+  (define-key c-mode-base-map (kbd "C-<") 'rtags-find-virtuals-at-point)
+  (define-key c-mode-base-map (kbd "M-s") 'rtags-imenu)
+  (define-key c-mode-base-map (kbd "C-c r i") 'rtags-print-symbol-info)
+  (define-key c-mode-base-map (kbd "M-[") 'rtags-location-stack-back)
+  (define-key c-mode-base-map (kbd "M-]") 'rtags-location-stack-forward)
+  (define-key c-mode-base-map (kbd "M-n") 'rtags-next-match)
+  (define-key c-mode-base-map (kbd "M-p") 'rtags-previous-match)
 
-;;;; More C++ keybindings (use C-c C-c to compile, C-i to indent)
-(define-key c-mode-base-map "\C-c\C-c" 'compile)
-(define-key c-mode-base-map "\C-i" 'c-indent-line-or-region)
+  (add-hook 'c++-mode-hook 'my-rtags-c++-mode-hook)
+)
+
 
 
 ;;; Better www mode with javascript, css, php and html support, all on
 ;;; the same file!
 (require 'web-mode)
+
+
+;;; Python
+
+
+(defun my-python-hook()
+  (jedi:setup)
+  (company-mode)
+  (add-to-list 'company-backends 'company-jedi))
+
+(add-hook 'python-mode-hook 'my-python-hook)
+(setq jedi:complete-on-dot t)
