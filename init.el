@@ -1,5 +1,7 @@
 ;;; init.el -- baol's dotemacs file
 ;;;
+;;; Running on Ubuntu 14.04 LTS GNU/Emacs 24.3
+;;;
 ;;; Commentary:
 ;;;             A dotemacs for C++/HTML/python/robot-framework with
 ;;;             (almost) consistent usage of company and key-bindings.
@@ -13,9 +15,13 @@
 ;;;
 ;;; Code:
 
+;;; work around
+(unless (keymap-parent lisp-mode-shared-map)
+  (set-keymap-parent lisp-mode-shared-map prog-mode-map))
+
 ;; Required packages (rtags needs to be installed separately)
-(defvar package-list '(
-                       clang-format
+(require 'package)
+(defvar package-list '(clang-format
                        cmake-mode
                        company
                        company-jedi
@@ -25,8 +31,9 @@
                        ido-ubiquitous
                        ido-vertical-mode
                        indent-guide
-                       ;; magit
+                       ;; magit (only on 24.4)
                        markdown-mode+
+                       multiple-cursors
                        nyan-mode
                        popup
                        powerline
@@ -34,15 +41,13 @@
                        rainbow-mode
                        visual-regexp
                        web-mode
-                       zenburn-theme
-                       ))
-
-(require 'package)
+                       zenburn-theme))
 (add-to-list 'package-archives
              '("melpa" . "https://melpa.org/packages/"))
 (add-to-list 'package-archives
              '("melpa-stable" . "https://stable.melpa.org/packages/"))
 (package-initialize)
+
 
 ;; Autoinstall packages
 (unless package-archive-contents
@@ -54,9 +59,6 @@
 
 ;; Add some local include paths
 (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/rtags/")
-
-;; Add some local include paths
-(add-to-list 'image-load-path "~/.emacs.d/icons/")
 
 
 ;; A side file to store informations that should not go on github
@@ -88,9 +90,16 @@
 (put 'downcase-region 'disabled nil)
 
 
-;; Turn on auto-fill in `text-mode' and derived modes
+;; Turn on auto-fill in `text-mode' and derived modes.
 ;; Try M-q on a long paragraph in a text file or C++ comment!
-(add-hook 'text-mode-hook 'turn-on-auto-fill)
+;; Enables simple multicursor editing using C-d
+(defun my-text-mode-hook()
+  (turn-on-auto-fill)
+  ;; Multiple cursors mode
+  (multiple-cursors-mode)
+  (global-set-key (kbd "C-d") 'mc/mark-next-symbol-like-this)
+  )
+(add-hook 'text-mode-hook 'my-text-mode-hook)
 
 
 ;; Font settings
@@ -117,7 +126,6 @@
 ;; Enable interactive autocompletion of files and commands
 (ido-mode 1)
 (ido-ubiquitous-mode 1)
-;; (ido-vertical-mode 1)
 (projectile-global-mode)
 (global-set-key (kbd "C-M-p") 'projectile-find-file)
 (global-set-key (kbd "C-<tab>") 'projectile-find-other-file)
@@ -170,12 +178,13 @@
 
 (setq-default indent-tabs-mode nil)
 (set-frame-size-according-to-resolution)
-(global-set-key [f11] 'toggle-fullscreen)
+(global-set-key (kbd "<f11>") 'toggle-fullscreen)
 
 
 ;; Powerline!
 (powerline-default-theme)
 (nyan-mode)
+
 
 ;;
 ;; Language specific settings
@@ -204,10 +213,11 @@
 ;; C++ hook
 (defun my-c++-mode-hook ()
   "My C++ setting."
-  (goto-address-prog-mode)      ;; click on links and emails
   ;;  (flyspell-prog-mode)          ;; spell check the comments
+  (unless (keymap-parent c-mode-base-map)
+    (set-keymap-parent c-mode-base-map prog-mode-map))
   (flycheck-mode)
-  (eldoc-mode)
+  ;; (eldoc-mode)
   (setq indent-tabs-mode nil)
   (highlight-symbol-mode)
   (setq mode-require-final-newline nil)
@@ -264,6 +274,15 @@
 (define-key c-mode-base-map (kbd "M-q") (function clang-format-region))
 
 
+;; Extend C++ extensions
+(add-to-list 'auto-mode-alist '("\\.cc\\'" . c++-mode))
+(add-to-list 'auto-mode-alist '("\\.cpp\\'" . c++-mode))
+(add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
+(add-to-list 'auto-mode-alist '("\\.hh\\'" . c++-mode))
+(add-to-list 'auto-mode-alist '("\\.hpp\\'" . c++-mode))
+(add-to-list 'auto-mode-alist '("\\.inl\\'" . c++-mode))
+
+
 ;; Better www mode with javascript, css, php and html support, all on
 ;; the same file!
 (require 'web-mode)
@@ -271,6 +290,8 @@
 
 ;; Python
 (defun my-python-hook()
+  (unless (keymap-parent python-mode-map)
+    (set-keymap-parent python-mode-map prog-mode-map))
   (jedi:setup)
   (eldoc-mode)
   (flycheck-mode)
@@ -285,16 +306,10 @@
 (add-hook 'python-mode-hook 'my-python-hook)
 (setq jedi:complete-on-dot t)
 
-;; Extend C++ extensions
-(add-to-list 'auto-mode-alist '("\\.cc\\'" . c++-mode))
-(add-to-list 'auto-mode-alist '("\\.cpp\\'" . c++-mode))
-(add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
-(add-to-list 'auto-mode-alist '("\\.hh\\'" . c++-mode))
-(add-to-list 'auto-mode-alist '("\\.hpp\\'" . c++-mode))
-(add-to-list 'auto-mode-alist '("\\.inl\\'" . c++-mode))
 
-
+;; common settings for all programming modes
 (defun my-prog-mode-hook()
+  (goto-address-prog-mode)      ;; click on links and emails
   (font-lock-add-keywords
    nil '(("\\<\\(FIX\\(ME\\)?\\|TODO\\|HACK\\|REFACTOR\\|NOCOMMIT\\)"
           1 font-lock-warning-face t)))
@@ -304,16 +319,20 @@
   (set-face-foreground 'indent-guide-face "#e09030")
   (hl-line-mode t)
   (company-mode)
+  ;; Multiple cursors mode
+  (multiple-cursors-mode)
+  (define-key prog-mode-map (kbd "C-d") 'mc/mark-next-symbol-like-this)
 )
+(add-hook 'prog-mode-hook 'my-prog-mode-hook)
 
 (set-face-foreground 'font-lock-warning-face "#F33")
 
-(add-hook 'prog-mode-hook 'my-prog-mode-hook)
 
 ;; Setup indent guide to not slow down scrolling
-(setq indent-guide-delay 0.1)
+(setq indent-guide-delay 0.3)
 (setq indent-guide-recursive t)
 (setq indent-guide-char ":") ;; "┊")
+
 
 ;;; init.el ends here
 ;;
