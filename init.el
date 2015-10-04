@@ -16,9 +16,11 @@
 ;; Required packages (rtags needs to be installed separately)
 (defvar package-list '(
                        zenburn-theme
+                       projectile
                        ido-ubiquitous
+                       ido-vertical-mode
                        ethan-wspace
-                       yasnippet
+                       ;; yasnippet  (I don't really use it :)
                        web-mode
                        popup
                        company
@@ -32,6 +34,7 @@
                        clang-format
                        cmake-mode
                        indent-guide
+                       nyan-mode
                        ))
 
 (require 'package)
@@ -66,6 +69,7 @@
 (show-paren-mode t)
 (setq visible-bell t)
 
+
 ;; Increas/decrease font size with C-+, C--
 (global-set-key (kbd "<C-+>") 'text-scale-increase)
 (global-set-key (kbd "<C-kp-add>") 'text-scale-increase)
@@ -79,21 +83,24 @@
 (put 'downcase-region 'disabled nil)
 
 
-;; Turn on auto-fill in `text-mode' and derived modes 
+;; Turn on auto-fill in `text-mode' and derived modes
 ;; Try M-q on a long paragraph in a text file or C++ comment!
 (add-hook 'text-mode-hook 'turn-on-auto-fill)
+
 
 ;; Font settings
 (require 'cl-lib)
 (defun font-candidate (&rest fonts)
   "Return existing font which first match in FONTS."
-  (cl-find-if (lambda (f) (find-font (font-spec :name f))) fonts))
+  (cl-find-if (lambda (f) (find-font (font-spec :name f))) fonts)
+)
 
 (set-face-attribute 'default nil :font
                     (font-candidate ' "Inconsolata-12"
                                       "Consolas-12"
                                       "DejaVu Sans Mono-12"
-                                      "Courier New-12"))
+                                      "Courier New-12")
+)
 
 
 ;; Recent file list (M-x recentf-open-file)
@@ -105,7 +112,12 @@
 ;; Enable interactive autocompletion of files and commands
 (ido-mode 1)
 (ido-ubiquitous-mode 1)
+;; (ido-vertical-mode 1)
+(projectile-global-mode)
+(global-set-key (kbd "C-M-p") 'projectile-find-file)
+(global-set-key (kbd "C-<tab>") 'projectile-find-other-file)
 
+(windmove-default-keybindings)
 
 ;; Check whitespaces wisely in all buffers
 (require 'ethan-wspace)
@@ -131,18 +143,24 @@
     ;; get the height we want
     (add-to-list 'default-frame-alist
          (cons 'height (/ (+ (x-display-pixel-height) 60)
-                             (frame-char-height)))))))
+                             (frame-char-height))))))
+)
+
 (defun toggle-fullscreen ()
   "Toggle full screen on X11"
   (interactive)
   (when (eq window-system 'x)
     (set-frame-parameter
      nil 'fullscreen
-     (when (not (frame-parameter nil 'fullscreen)) 'fullboth))))
+     (when (not (frame-parameter nil 'fullscreen)) 'fullboth)))
+)
+
 (defun fullscreen ()
   (interactive)
   (x-send-client-message nil 0 nil "_NET_WM_STATE" 32
-                         '(2 "_NET_WM_STATE_FULLSCREEN" 0)))
+                         '(2 "_NET_WM_STATE_FULLSCREEN" 0))
+)
+
 (setq-default indent-tabs-mode nil)
 (set-frame-size-according-to-resolution)
 (global-set-key [f11] 'toggle-fullscreen)
@@ -150,13 +168,16 @@
 
 ;; Powerline!
 (powerline-default-theme)
+(nyan-mode)
 
 ;;
 ;; Language specific settings
 ;;
 
+
 ;; Markdown
 (add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
+
 
 ;; Robot Framework editing mode
 (load-file "~/.emacs.d/robot-mode/robot-mode.el")
@@ -177,7 +198,7 @@
 (defun my-c++-mode-hook ()
   "My C++ setting."
   (goto-address-prog-mode)      ;; click on links and emails
-  (flyspell-prog-mode)          ;; spell check the comments
+  ;;  (flyspell-prog-mode)          ;; spell check the comments
   (flycheck-mode)
   (eldoc-mode)
   (setq indent-tabs-mode nil)
@@ -185,14 +206,16 @@
   (setq mode-require-final-newline nil)
   (define-key c-mode-base-map "\C-c\C-c" 'compile)
   (define-key c-mode-base-map "\C-i" 'c-indent-line-or-region)
-  )
+)
 
 (add-hook 'c++-mode-hook 'my-c++-mode-hook)
 
 ;; YASnippet
-(require 'yasnippet)
+;; (require 'yasnippet)
+
 
 ;; RTAGS is Great for C++ navigation, refactoring and autocompletion
+(require 'cl)
 (require 'rtags)
 (require 'company-rtags)
 
@@ -217,6 +240,7 @@
   (define-key c-mode-base-map (kbd "M-]") 'rtags-location-stack-forward)
   (define-key c-mode-base-map (kbd "M-n") 'rtags-next-match)
   (define-key c-mode-base-map (kbd "M-p") 'rtags-previous-match)
+  (define-key c-mode-base-map (kbd "M-/") 'company-complete)
 )
 
 (add-hook 'c++-mode-hook 'my-rtags-c++-mode-hook)
@@ -250,6 +274,7 @@
   (define-key python-mode-map (kbd "M-.") 'jedi:goto-definition)
   (define-key python-mode-map (kbd "M-,") 'jedi:goto-definition-next)
   (define-key python-mode-map (kbd "M-[") 'jedi:goto-definition-pop-marker)
+  (define-key python-mode-map (kbd "M-/") 'company-complete)
 )
 
 (add-hook 'python-mode-hook 'my-python-hook)
@@ -271,20 +296,20 @@
   (highlight-symbol-mode)
   (rainbow-mode)
   (indent-guide-mode)
+  (set-face-foreground 'indent-guide-face "#e09030")
   (hl-line-mode t)
   (company-mode)
-  (define-key prog-mode-map (kbd "M-/") 'company-complete)
-  )
+)
+
+(set-face-foreground 'font-lock-warning-face "#F33")
 
 (add-hook 'prog-mode-hook 'my-prog-mode-hook)
+
+;; Setup indent guide to not slow down scrolling
+(setq indent-guide-delay 0.1)
+(setq indent-guide-recursive t)
+(setq indent-guide-char "┊")
 
 ;;; init.el ends here
 ;;
 ;;  LocalWords:  init LocalWords baol's dotemacs rtags el
-
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(font-lock-warning-face ((t (:inherit error :foreground "#FF2F2F" :weight bold)))))
