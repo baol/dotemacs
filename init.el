@@ -15,31 +15,33 @@
 
 ;; Required packages (rtags needs to be installed separately)
 (defvar package-list '(
-                       zenburn-theme
-                       projectile
-                       ido-ubiquitous
-                       ido-vertical-mode
-                       ethan-wspace
-                       ;; yasnippet  (I don't really use it :)
-                       web-mode
-                       popup
-                       company
-                       company-jedi
-                       markdown-mode+
-                       powerline
-                       flycheck
-                       rainbow-mode
-                       visual-regexp
-                       highlight-symbol
                        clang-format
                        cmake-mode
+                       company
+                       company-jedi
+                       ethan-wspace
+                       flycheck
+                       highlight-symbol
+                       ido-ubiquitous
+                       ido-vertical-mode
                        indent-guide
+                       ;; magit
+                       markdown-mode+
                        nyan-mode
+                       popup
+                       powerline
+                       projectile
+                       rainbow-mode
+                       visual-regexp
+                       web-mode
+                       zenburn-theme
                        ))
 
 (require 'package)
 (add-to-list 'package-archives
              '("melpa" . "https://melpa.org/packages/"))
+(add-to-list 'package-archives
+             '("melpa-stable" . "https://stable.melpa.org/packages/"))
 (package-initialize)
 
 ;; Autoinstall packages
@@ -52,6 +54,9 @@
 
 ;; Add some local include paths
 (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/rtags/")
+
+;; Add some local include paths
+(add-to-list 'image-load-path "~/.emacs.d/icons/")
 
 
 ;; A side file to store informations that should not go on github
@@ -95,12 +100,12 @@
   (cl-find-if (lambda (f) (find-font (font-spec :name f))) fonts)
 )
 
-(set-face-attribute 'default nil :font
-                    (font-candidate ' "Inconsolata-12"
-                                      "Consolas-12"
-                                      "DejaVu Sans Mono-12"
-                                      "Courier New-12")
-)
+(when (display-graphic-p)
+  (set-face-attribute 'default nil :font
+                      (font-candidate ' "Inconsolata-12"
+                                        "Consolas-12"
+                                        "DejaVu Sans Mono-12"
+                                        "Courier New-12")))
 
 
 ;; Recent file list (M-x recentf-open-file)
@@ -116,6 +121,8 @@
 (projectile-global-mode)
 (global-set-key (kbd "C-M-p") 'projectile-find-file)
 (global-set-key (kbd "C-<tab>") 'projectile-find-other-file)
+
+(setq projectile-switch-project-action 'projectile-vc)
 
 (windmove-default-keybindings)
 
@@ -208,10 +215,8 @@
   (define-key c-mode-base-map "\C-i" 'c-indent-line-or-region)
 )
 
-(add-hook 'c++-mode-hook 'my-c++-mode-hook)
 
-;; YASnippet
-;; (require 'yasnippet)
+(add-hook 'c++-mode-hook 'my-c++-mode-hook)
 
 
 ;; RTAGS is Great for C++ navigation, refactoring and autocompletion
@@ -222,7 +227,7 @@
 (defun my-rtags-c++-mode-hook ()
   "C++ setting for rtags."
   (rtags-start-process-maybe)
-  (setq company-backends '(company-rtags company-yasnippet))
+  (setq company-backends '(company-rtags))
   (setq rtags-completions-enabled t
         rtags-display-current-error-as-tooltip t
         rtags-autostart-diagnostics t
@@ -240,7 +245,7 @@
   (define-key c-mode-base-map (kbd "M-]") 'rtags-location-stack-forward)
   (define-key c-mode-base-map (kbd "M-n") 'rtags-next-match)
   (define-key c-mode-base-map (kbd "M-p") 'rtags-previous-match)
-  (define-key c-mode-base-map (kbd "M-/") 'company-complete)
+  ;; (define-key c-mode-base-map (kbd "M-/") 'company-complete)
 )
 
 (add-hook 'c++-mode-hook 'my-rtags-c++-mode-hook)
@@ -270,7 +275,7 @@
   (eldoc-mode)
   (flycheck-mode)
   (setq mode-require-final-newline nil)
-  (setq company-backends '(company-jedi company-yasnippet))
+  (setq company-backends '(company-jedi))
   (define-key python-mode-map (kbd "M-.") 'jedi:goto-definition)
   (define-key python-mode-map (kbd "M-,") 'jedi:goto-definition-next)
   (define-key python-mode-map (kbd "M-[") 'jedi:goto-definition-pop-marker)
@@ -308,7 +313,7 @@
 ;; Setup indent guide to not slow down scrolling
 (setq indent-guide-delay 0.1)
 (setq indent-guide-recursive t)
-(setq indent-guide-char "┊")
+(setq indent-guide-char ":") ;; "┊")
 
 ;;; init.el ends here
 ;;
