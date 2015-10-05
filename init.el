@@ -29,6 +29,7 @@
                          flycheck
                          highlight-symbol
                          helm
+                         helm-projectile
                          json-mode
                          json-reformat
                          ;; magit (only on 24.4)
@@ -84,46 +85,34 @@
                (helm-adaptive-mode 1)
                (helm-push-mark-mode 1)))
 
-;;; Helm-command-map
-;;
-;;
-(define-key helm-command-map (kbd "g")   'helm-apt)
-(define-key helm-command-map (kbd "w")   'helm-psession)
-(define-key helm-command-map (kbd "z")   'helm-complex-command-history)
-(define-key helm-command-map (kbd "w")   'helm-w3m-bookmarks)
-(define-key helm-command-map (kbd "x")   'helm-firefox-bookmarks)
-(define-key helm-command-map (kbd "#")   'helm-emms)
-(define-key helm-command-map (kbd "I")   'helm-imenu-in-all-buffers)
-
 ;;; Global-map
 ;;
 ;;
-(global-set-key (kbd "M-x")                          'undefined)
-(global-set-key (kbd "M-x")                          'helm-M-x)
-(global-set-key (kbd "M-y")                          'helm-show-kill-ring)
-(global-set-key (kbd "C-c f")                        'helm-recentf)
-(global-set-key (kbd "C-x C-f")                      'helm-find-files)
-(global-set-key (kbd "C-c <SPC>")                    'helm-all-mark-rings)
-(global-set-key (kbd "C-x r b")                      'helm-filtered-bookmarks)
-(global-set-key (kbd "C-h r")                        'helm-info-emacs)
-(global-set-key (kbd "C-:")                          'helm-eval-expression-with-eldoc)
-(global-set-key (kbd "C-,")                          'helm-calcul-expression)
-(global-set-key (kbd "C-h i")                        'helm-info-at-point)
-(global-set-key (kbd "C-x C-d")                      'helm-browse-project)
-(global-set-key (kbd "<f1>")                         'helm-resume)
-(global-set-key (kbd "C-h C-f")                      'helm-apropos)
-(global-set-key (kbd "<f5> s")                       'helm-find)
-(global-set-key (kbd "<f2>")                         'helm-execute-kmacro)
-(global-set-key (kbd "C-c i")                        'helm-imenu-in-all-buffers)
-(global-set-key (kbd "<f11> o")                      'helm-org-agenda-files-headings)
-(global-set-key (kbd "C-s")                          'helm-occur)
+(global-set-key (kbd "M-x")       'undefined)
+(global-set-key (kbd "M-x")       'helm-M-x)
+(global-set-key (kbd "M-y")       'helm-show-kill-ring)
+(global-set-key (kbd "C-c f")     'helm-recentf)
+(global-set-key (kbd "C-x C-f")   'helm-find-files)
+(global-set-key (kbd "C-c <SPC>") 'helm-all-mark-rings)
+(global-set-key (kbd "C-x r b")   'helm-filtered-bookmarks)
+(global-set-key (kbd "C-:")       'helm-eval-expression-with-eldoc)
+(global-set-key (kbd "C-,")       'helm-calcul-expression)
+(global-set-key (kbd "C-h i")     'helm-info-at-point)
+(global-set-key (kbd "C-x C-d")   'helm-browse-project)
+(global-set-key (kbd "<f1>")      'helm-resume)
+(global-set-key (kbd "C-h C-f")   'helm-apropos)
+(global-set-key (kbd "<f5> s")    'helm-find)
+(global-set-key (kbd "<f2>")      'helm-execute-kmacro)
+(global-set-key (kbd "C-c i")     'helm-imenu-in-all-buffers)
+; (global-set-key (kbd "C-s")       'helm-occur)
+(global-set-key (kbd "C-x C-p")   'helm-projectile-switch-project)
+(global-set-key (kbd "C-x C-o")   'helm-projectile-find-file)
+(global-set-key (kbd "C-<tab>")   'helm-projectile-find-other-file)
 (define-key global-map [remap jump-to-register]      'helm-register)
 (define-key global-map [remap list-buffers]          'helm-buffers-list)
 (define-key global-map [remap dabbrev-expand]        'helm-dabbrev)
 (define-key global-map [remap find-tag]              'helm-etags-select)
 (define-key global-map [remap xref-find-definitions] 'helm-etags-select)
-(define-key global-map (kbd "M-g a")                 'helm-do-grep-ag)
-(define-key shell-mode-map (kbd "M-p")               'helm-comint-input-ring) ; shell history.
 
 ;; (no)colors!
 (require 'zenburn-theme)
@@ -181,11 +170,7 @@
 
 
 ;; Enable interactive autocompletion of files and commands
-; (ido-mode 1)
-; (ido-ubiquitous-mode 1)
 (projectile-global-mode)
-(global-set-key (kbd "C-M-p") 'projectile-find-file)
-(global-set-key (kbd "C-<tab>") 'projectile-find-other-file)
 
 (setq projectile-switch-project-action 'projectile-vc)
 
@@ -219,7 +204,7 @@
 )
 
 (defun toggle-fullscreen ()
-  "Toggle full screen on X11"
+  "Toggle full screen on X11."
   (interactive)
   (when (eq window-system 'x)
     (set-frame-parameter
@@ -228,7 +213,7 @@
 )
 
 (defun fullscreen ()
-  (interactive)
+  "Send fullscreen messaeg to X11."
   (x-send-client-message nil 0 nil "_NET_WM_STATE" 32
                          '(2 "_NET_WM_STATE_FULLSCREEN" 0))
 )
@@ -273,7 +258,6 @@
   ;;  (flyspell-prog-mode)          ;; spell check the comments
   (unless (keymap-parent c-mode-base-map)
     (set-keymap-parent c-mode-base-map prog-mode-map))
-  (flycheck-mode)
   ;; (eldoc-mode)
   (setq indent-tabs-mode nil)
   (highlight-symbol-mode)
@@ -350,7 +334,6 @@
     (set-keymap-parent python-mode-map prog-mode-map))
   (jedi:setup)
   (eldoc-mode)
-  (flycheck-mode)
   (setq mode-require-final-newline nil)
   (setq company-backends '(company-jedi))
   (define-key python-mode-map (kbd "M-.") 'jedi:goto-definition)
@@ -372,6 +355,7 @@
   (rainbow-mode)
   (hl-line-mode t)
   (company-mode)
+  (flycheck-mode)
   ;; Multiple cursors mode
   (multiple-cursors-mode)
   (define-key prog-mode-map (kbd "C-d") 'mc/mark-next-symbol-like-this)
