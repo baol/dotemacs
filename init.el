@@ -28,9 +28,12 @@
                        ethan-wspace
                        flycheck
                        highlight-symbol
+                       helm
                        ido-ubiquitous
                        ido-vertical-mode
                        indent-guide
+                       json-mode
+                       json-reformat
                        ;; magit (only on 24.4)
                        markdown-mode+
                        multiple-cursors
@@ -38,10 +41,13 @@
                        popup
                        powerline
                        projectile
+                       py-autopep8
                        rainbow-mode
+                       sx
                        visual-regexp
                        web-mode
                        zenburn-theme))
+
 (add-to-list 'package-archives
              '("melpa" . "https://melpa.org/packages/"))
 (add-to-list 'package-archives
