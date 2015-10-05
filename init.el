@@ -255,7 +255,6 @@
   (define-key c-mode-base-map (kbd "M-]") 'rtags-location-stack-forward)
   (define-key c-mode-base-map (kbd "M-n") 'rtags-next-match)
   (define-key c-mode-base-map (kbd "M-p") 'rtags-previous-match)
-  (define-key c-mode-base-map (kbd "M-/") 'company-complete)
 )
 
 (add-hook 'c++-mode-hook 'my-rtags-c++-mode-hook)
@@ -300,7 +299,6 @@
   (define-key python-mode-map (kbd "M-.") 'jedi:goto-definition)
   (define-key python-mode-map (kbd "M-,") 'jedi:goto-definition-next)
   (define-key python-mode-map (kbd "M-[") 'jedi:goto-definition-pop-marker)
-  (define-key python-mode-map (kbd "M-/") 'company-complete)
 )
 
 (add-hook 'python-mode-hook 'my-python-hook)
@@ -322,6 +320,7 @@
   ;; Multiple cursors mode
   (multiple-cursors-mode)
   (define-key prog-mode-map (kbd "C-d") 'mc/mark-next-symbol-like-this)
+  (define-key prog-mode-map (kbd "M-/") 'company-complete)
 )
 (add-hook 'prog-mode-hook 'my-prog-mode-hook)
 
