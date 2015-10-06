@@ -4,6 +4,7 @@
 ;;
 (require 'json)
 (require 'request)
+(require 'multi)
 
 (defun alist-get (symbols alist)
   "Look up the value for the chain of SYMBOLS in ALIST."
@@ -68,8 +69,8 @@
    :success (function*
              (lambda (&key data &allow-other-keys)
                (message "Ok")
-               (with-output-to-temp-buffer "*spotter debug*"
-                 (print data))
+               ; (with-output-to-temp-buffer "*spotter debug*"
+               ;   (print data))
                (helm :sources (helm-build-sync-source "Spotify tracks"
                                 :multiline t
                                 :candidates (spotify-format data)
