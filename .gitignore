@@ -4,10 +4,13 @@ confidential.el
 # Compiled
 *.elc
 
-# Packaging
+# Packages
+.sx
 .cask
 .python-environments/
 elpa/
+helm-adaptive-history
+projectile-bookmarks.eld
 
 # Random
 auto-save-alist/
