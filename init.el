@@ -1,6 +1,6 @@
 ;;; init.el -- baol's dotemacs file
 ;;;
-;;; Running on Ubuntu 14.04 LTS GNU/Emacs 24.3
+;;; Running on GNU/Emacs 25
 ;;;
 ;;; Commentary:
 ;;;             A dotemacs for C++/HTML/python/robot-framework with
@@ -29,11 +29,13 @@
                          flycheck
                          highlight-symbol
                          helm
+                         helm-ag
                          helm-projectile
                          json-mode
                          json-reformat
                          magit ;; (only on 24.4)
                          markdown-mode+
+                         multi
                          multiple-cursors
                          nose
                          nyan-mode
@@ -42,6 +44,8 @@
                          projectile
                          py-autopep8
                          rainbow-mode
+                         realgud
+                         request
                          sx
                          use-package
                          visual-regexp
@@ -68,7 +72,7 @@
 
 ;; A side file to store informations that should not go on github
 (load-file "~/.emacs.d/confidential.el")
-
+(load-file "~/.emacs.d/experiment/helm-spotting.el")
 
 ;;
 ;; Common settings
@@ -88,45 +92,46 @@
 
 
 ;; HELM
-(require 'use-package)
+(require 'ido)
+(require 'helm)
 (require 'helm-config)
 (require 'helm-projectile)
 
-(use-package helm-config
-             :config
-             (progn
-               (helm-mode 1)
-               (helm-adaptive-mode 1)
-               (helm-push-mark-mode 1)))
+(setq helm-split-window-in-side-p           t
+      helm-buffers-fuzzy-matching           t
+      helm-ff-fuzzy-matching                t
+      helm-M-x-fuzzy-matching               t
+      helm-projectile-fuzzy-match           t
+      helm-move-to-line-cycle-in-source     t
+      helm-ff-search-library-in-sexp        t
+      helm-scroll-amount                    8
+      helm-ff-file-name-history-use-recentf t)
+
+(ido-mode 1)
+; (helm-mode 1)
 
 ;;; Global-map
 ;;
 ;;
-(global-set-key (kbd "M-x")       'undefined)
 (global-set-key (kbd "M-x")       'helm-M-x)
 (global-set-key (kbd "M-y")       'helm-show-kill-ring)
-(global-set-key (kbd "C-c f")     'helm-recentf)
-(global-set-key (kbd "C-x C-f")   'helm-find-files)
-(global-set-key (kbd "C-c <SPC>") 'helm-all-mark-rings)
-(global-set-key (kbd "C-x r b")   'helm-filtered-bookmarks)
-(global-set-key (kbd "C-:")       'helm-eval-expression-with-eldoc)
-(global-set-key (kbd "C-,")       'helm-calcul-expression)
-(global-set-key (kbd "C-h i")     'helm-info-at-point)
-(global-set-key (kbd "C-x C-d")   'helm-browse-project)
-(global-set-key (kbd "<f1>")      'helm-resume)
-(global-set-key (kbd "C-h C-f")   'helm-apropos)
-(global-set-key (kbd "<f5> s")    'helm-find)
-(global-set-key (kbd "<f2>")      'helm-execute-kmacro)
-(global-set-key (kbd "C-c i")     'helm-imenu-in-all-buffers)
-; (global-set-key (kbd "C-s")       'helm-occur)
+(global-set-key (kbd "C-x C-f")   'ido-find-file)
+(global-set-key (kbd "C-x b")     'helm-mini)
+(global-set-key (kbd "C-c i")     'imenu)
+(global-set-key (kbd "C-'")       'helm-occur-from-isearch)
 (global-set-key (kbd "C-x C-p")   'helm-projectile-switch-project)
 (global-set-key (kbd "C-x C-o")   'helm-projectile-find-file)
+(global-set-key (kbd "C-x C-k")   'helm-projectile-ag)
 (global-set-key (kbd "C-<tab>")   'helm-projectile-find-other-file)
-(define-key global-map [remap jump-to-register]      'helm-register)
-(define-key global-map [remap list-buffers]          'helm-buffers-list)
-(define-key global-map [remap dabbrev-expand]        'helm-dabbrev)
-(define-key global-map [remap find-tag]              'helm-etags-select)
-(define-key global-map [remap xref-find-definitions] 'helm-etags-select)
+(global-set-key (kbd "C-c C-s")   'magit-status)
+(global-set-key (kbd "C-c C-d")   'magit-diff)
+(global-set-key (kbd "C-c C-b")   'magit-blame)
+(global-set-key (kbd "C-c C-c")   'magit-commit)
+(global-set-key (kbd "C-c C-a")   'magit-commit-amend)
+(global-set-key (kbd "C-c C-p")   'magit-pull)
+(global-set-key (kbd "C-c C-m")   'magit-merge)
+(global-set-key (kbd "C-c C-r")   'magit-rebase)
+(global-set-key (kbd "C-c p")     'magit-push)
 
 ;; (no)colors!
 (require 'zenburn-theme)
@@ -156,6 +161,8 @@
 (defun my-text-mode-hook()
   (turn-on-auto-fill)
   ;; Multiple cursors mode
+  (company-mode)
+  (setq company-backends '(company-ispell company-files))
   (multiple-cursors-mode)
   (global-set-key (kbd "C-d") 'mc/mark-next-symbol-like-this)
   )
@@ -238,9 +245,11 @@
 
 
 ;; Powerline!
-(powerline-default-theme)
-(nyan-mode)
+(powerline-center-theme)
+;(nyan-mode)
 
+;; Realgud debugger
+(require 'realgud)
 
 ;;
 ;; Language specific settings
@@ -291,8 +300,8 @@
 
 (defun my-rtags-c++-mode-hook ()
   "C++ setting for rtags."
-  (rtags-start-process-maybe)
-  (setq company-backends '(company-rtags))
+  ;; (rtags-start-process-maybe)
+  (setq company-backends '(company-rtags company-files))
   (setq rtags-completions-enabled t
         rtags-display-current-error-as-tooltip t
         rtags-autostart-diagnostics t
@@ -304,7 +313,7 @@
   (define-key c-mode-base-map (kbd "C-.") 'rtags-find-symbol)
   (define-key c-mode-base-map (kbd "C-,") 'rtags-find-references)
   (define-key c-mode-base-map (kbd "C-<") 'rtags-find-virtuals-at-point)
-  (define-key c-mode-base-map (kbd "M-s") 'rtags-imenu)
+  (define-key c-mode-base-map (kbd "C-c i") 'rtags-imenu)
   (define-key c-mode-base-map (kbd "C-c r i") 'rtags-print-symbol-info)
   (define-key c-mode-base-map (kbd "M-[") 'rtags-location-stack-back)
   (define-key c-mode-base-map (kbd "M-]") 'rtags-location-stack-forward)
@@ -349,7 +358,7 @@
   (jedi:setup)
   (eldoc-mode)
   (setq mode-require-final-newline nil)
-  (setq company-backends '(company-jedi))
+  (setq company-backends '(company-jedi company-files))
   (define-key python-mode-map (kbd "M-.") 'jedi:goto-definition)
   (define-key python-mode-map (kbd "M-,") 'jedi:goto-definition-next)
   (define-key python-mode-map (kbd "M-[") 'jedi:goto-definition-pop-marker)
@@ -357,6 +366,11 @@
 
 (add-hook 'python-mode-hook 'my-python-hook)
 (setq jedi:complete-on-dot t)
+
+(defun my-elisp-mode-hook ()
+  (setq company-backends '(company-elisp company-files)))
+
+(add-hook 'emacs-lisp-mode-hook 'my-elisp-mode-hook)
 
 
 ;; common settings for all programming modes
@@ -377,8 +391,11 @@
 )
 (add-hook 'prog-mode-hook 'my-prog-mode-hook)
 
-(set-face-foreground 'font-lock-warning-face "#F33")
+(set-face-foreground 'font-lock-warning-face "salmon1")
+(set-face-background 'helm-selection "salmon1")
+(set-face-foreground 'helm-selection "black")
 
+(tool-bar-mode -1)
 ;;; init.el ends here
 ;;
 ;;  LocalWords:  init LocalWords baol's dotemacs rtags el

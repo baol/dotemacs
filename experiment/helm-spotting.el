@@ -6,10 +6,10 @@
 (require 'request)
 (require 'multi)
 
-(defun alist-get (symbols alist)
+(defun spotting-alist-get (symbols alist)
   "Look up the value for the chain of SYMBOLS in ALIST."
   (if symbols
-      (alist-get (cdr symbols) (assoc (car symbols) alist)) (cdr alist)))
+      (spotting-alist-get (cdr symbols) (assoc (car symbols) alist)) (cdr alist)))
 
 (defmulti spotify-play-href (href)
   "Get the Spotify app to play the object with the given HREF." system-type)
@@ -28,11 +28,11 @@
 
 (defun spotify-play-track (track)
   "Get the Spotify app to play the TRACK."
-  (spotify-play-href (alist-get '(uri) track)))
+  (spotify-play-href (spotting-alist-get '(uri) track)))
 
 (defun spotify-play-album (track)
   "Get the Spotify app to play the album for this TRACK."
-  (spotify-play-href (alist-get '(album uri) track)))
+  (spotify-play-href (spotting-alist-get '(album uri) track)))
 
 (defun helm-spotting-tracks (query-string)
   (interactive "sQuery: ")
@@ -45,19 +45,19 @@
 (defun spotify-format (js-data)
   (mapcar (lambda (track) (cons (concat
                                  " "
-                                 (alist-get '(name) (aref (alist-get '(artists) track) 0))
+                                 (spotting-alist-get '(name) (aref (spotting-alist-get '(artists) track) 0))
                                  "  /  "
-                                 (alist-get '(album name) track)
+                                 (spotting-alist-get '(album name) track)
                                  "\n "
-                                 (alist-get '(name) track)
+                                 (spotting-alist-get '(name) track)
                                  ) track))
-          (alist-get '(items) (alist-get '(tracks) data))
+          (spotting-alist-get '(items) (spotting-alist-get '(tracks) data))
           ))
 
 (defun helm-spotify-actions-for-track (actions track)
   "Return a list of helm ACTIONS available for this TRACK."
-  `((,(format "Play Track - %s" (alist-get '(name) track)) . spotify-play-track)
-    (,(format "Play Album - %s" (alist-get '(name) track)) . spotify-play-album)
+  `((,(format "Play Track - %s" (spotting-alist-get '(name) track)) . spotify-play-track)
+    (,(format "Play Album - %s" (spotting-alist-get '(name) track)) . spotify-play-album)
     ("Show Track Metadata" . pp)))
 
 (defun spotify-search-async (endpoint search-string)
