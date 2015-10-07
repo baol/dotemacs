@@ -18,19 +18,29 @@
 ;;; Code:
 
 ;; Font settings
-(require 'cl-lib)
-(defun font-candidate (&rest fonts)
-  "Return existing font which first match in FONTS."
-  (cl-find-if (lambda (f) (find-font (font-spec :name f))) fonts)
-)
+(defun my-font-candidate-filter (f)
+  (unless (find-font (font-spec :name f)) f))
+
+(defun remove-all (predic seq &optional res)
+  (if (null seq)
+      (reverse res)
+      (cond ((and (not (null (car seq))) (listp (car seq)))
+             (remove-all predic (cdr seq)
+                         (cons (remove-all predic (car seq)) res)))
+            ((funcall predic (car seq))
+             (remove-all predic (cdr seq) res))
+            (t (remove-all predic (cdr seq) (cons (car seq) res))))))
+
+(defun my-font-candidate (&rest fonts)
+  (car (remove-all #'my-font-candidate-filter fonts)))
 
 (when (display-graphic-p)
   (set-face-attribute 'default nil :font
-                      (font-candidate ' "Inconsolata-12"
-                                        "Consolas-12"
-                                        "Monaco-12"
-                                        "DejaVu Sans Mono-12"
-                                        "Courier New-12")))
+                      (my-font-candidate ' "Inconsolata-12"
+                                           "Consolas-12"
+                                           "Monaco-12"
+                                           "DejaVu Sans Mono-12"
+                                           "Courier New-12")))
 
 ;; Automatic window resizing and fullscreen mode
 (defun set-frame-size-according-to-resolution ()
@@ -95,8 +105,8 @@
 
 (add-to-list 'package-archives
              '("melpa" . "https://melpa.org/packages/"))
-(add-to-list 'package-archives
-             '("melpa-stable" . "https://stable.melpa.org/packages/"))
+;(add-to-list 'package-archives
+;             '("melpa-stable" . "https://stable.melpa.org/packages/"))
 (package-initialize)
 
 ;; Autoinstall packages
@@ -223,9 +233,9 @@
 (add-hook 'text-mode-hook 'my-text-mode-hook)
 
 ;; Recent file list (M-x recentf-open-file)
-(require 'recentf)
-(recentf-mode 1)
-(setq recentf-max-menu-items 25)
+;(require 'recentf)
+;(recentf-mode 1)
+;(setq recentf-max-menu-items 25)
 
 
 ;; Enable interactive autocompletion of files and commands
@@ -249,7 +259,7 @@
 ;(nyan-mode)
 
 ;; Realgud debugger
-(require 'realgud)
+;(require 'realgud)
 
 ;;
 ;; Language specific settings
@@ -294,7 +304,6 @@
 
 
 ;; RTAGS is Great for C++ navigation, refactoring and autocompletion
-(require 'cl)
 (require 'rtags)
 (require 'company-rtags)
 
