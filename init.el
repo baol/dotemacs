@@ -50,6 +50,7 @@
                          use-package
                          visual-regexp
                          web-mode
+                         yascroll
                          zenburn-theme))
 
 (add-to-list 'package-archives
@@ -90,6 +91,19 @@
 (when window-system
   (global-set-key (kbd "C-x C-c") 'ask-before-closing))
 
+;; setting up scrollbar and visual bell
+(tool-bar-mode -1)
+(scroll-bar-mode -1)
+
+(defun my-terminal-visible-bell ()
+  "A friendlier visual bell effect."
+  (invert-face 'fringe)
+  (run-with-timer 0.15 nil 'invert-face 'fringe))
+
+(setq visible-bell nil
+      ring-bell-function 'my-terminal-visible-bell)
+
+(yascroll-mode)
 
 ;; HELM
 (require 'ido)
@@ -180,11 +194,10 @@
   (set-face-attribute 'default nil :font
                       (font-candidate ' "Inconsolata-12"
                                         "Consolas-12"
+                                        "Monaco-12"
                                         "DejaVu Sans Mono-12"
                                         "Courier New-12")))
 
-
-;(/ (display-pixel-width) (/ (display-mm-width) 25.4))
 
 ;; Recent file list (M-x recentf-open-file)
 (require 'recentf)
@@ -393,11 +406,10 @@
 )
 (add-hook 'prog-mode-hook 'my-prog-mode-hook)
 
-(set-face-foreground 'font-lock-warning-face "salmon1")
+(set-face-foreground 'font-lock-warning-face "salmon2")
 (set-face-background 'helm-selection "salmon1")
 (set-face-foreground 'helm-selection "black")
 
-(tool-bar-mode -1)
 ;;; init.el ends here
 ;;
 ;;  LocalWords:  init LocalWords baol's dotemacs rtags el
