@@ -143,10 +143,10 @@
 
 
 ;; Increas/decrease font size with C-+, C--
-(global-set-key (kbd "<C-+>") 'text-scale-increase)
+(global-set-key (kbd "C-+") 'text-scale-increase)
 (global-set-key (kbd "<C-kp-add>") 'text-scale-increase)
-(global-set-key (kbd "<C-=>") 'text-scale-increase)
-(global-set-key (kbd "<C-\->") 'text-scale-decrease)
+(global-set-key (kbd "C-=") 'text-scale-increase)
+(global-set-key (kbd "C-\-") 'text-scale-decrease)
 (global-set-key (kbd "<C-kp-subtract>") 'text-scale-decrease)
 
 
@@ -183,6 +183,8 @@
                                         "DejaVu Sans Mono-12"
                                         "Courier New-12")))
 
+
+;(/ (display-pixel-width) (/ (display-mm-width) 25.4))
 
 ;; Recent file list (M-x recentf-open-file)
 (require 'recentf)
