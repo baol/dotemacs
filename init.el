@@ -103,7 +103,7 @@
 (setq visible-bell nil
       ring-bell-function 'my-terminal-visible-bell)
 
-(yascroll-mode)
+(yascroll-bar-mode)
 
 ;; HELM
 (require 'ido)
@@ -210,7 +210,7 @@
 
 (setq projectile-switch-project-action 'projectile-vc)
 
-(windmove-default-keybindings)
+; (windmove-default-keybindings)
 
 ;; Check whitespaces wisely in all buffers
 (require 'ethan-wspace)
