@@ -2,6 +2,8 @@
 ;;;
 ;;; Running on GNU/Emacs 25
 ;;;
+;;; A collection yanked after killing someone else's buffer.
+;;;
 ;;; Commentary:
 ;;;             A dotemacs for C++/HTML/python/robot-framework with
 ;;;             (almost) consistent usage of company and key-bindings.
@@ -14,6 +16,44 @@
 ;;;             M-[  goes back
 ;;;
 ;;; Code:
+
+;; Font settings
+(require 'cl-lib)
+(defun font-candidate (&rest fonts)
+  "Return existing font which first match in FONTS."
+  (cl-find-if (lambda (f) (find-font (font-spec :name f))) fonts)
+)
+
+(when (display-graphic-p)
+  (set-face-attribute 'default nil :font
+                      (font-candidate ' "Inconsolata-12"
+                                        "Consolas-12"
+                                        "Monaco-12"
+                                        "DejaVu Sans Mono-12"
+                                        "Courier New-12")))
+
+;; Automatic window resizing and fullscreen mode
+(defun set-frame-size-according-to-resolution ()
+  "Re-size Emacs according to the current screen capabilities."
+  (interactive)
+  (if window-system
+  (progn
+    ;; use 120 char wide window for largeish displays
+    ;; and smaller 80 column windows for smaller displays
+    ;; pick whatever numbers make sense for you
+    (if (> (x-display-pixel-width) 1280)
+           (add-to-list 'default-frame-alist (cons 'width 136))
+           (add-to-list 'default-frame-alist (cons 'width 136)))
+    ;; for the height, subtract a couple hundred pixels
+    ;; from the screen height (for panels, menubars and
+    ;; whatnot), then divide by the height of a char to
+    ;; get the height we want
+    (add-to-list 'default-frame-alist
+         (cons 'height (/ (+ (x-display-pixel-height) 60)
+                          (frame-char-height)))))))
+
+(when (eq window-system 'x) ; seems to be buggy on mac os
+  (set-frame-size-according-to-resolution))
 
 ;;; work around
 (unless (keymap-parent lisp-mode-shared-map)
@@ -91,9 +131,6 @@
 (when window-system
   (global-set-key (kbd "C-x C-c") 'ask-before-closing))
 
-;; setting up scrollbar and visual bell
-(tool-bar-mode -1)
-(scroll-bar-mode -1)
 
 (defun my-terminal-visible-bell ()
   "A friendlier visual bell effect."
@@ -103,6 +140,9 @@
 (setq visible-bell nil
       ring-bell-function 'my-terminal-visible-bell)
 
+;; setting up scrollbar and visual bell
+(scroll-bar-mode -1)
+(tool-bar-mode -1)
 (yascroll-bar-mode)
 
 ;; HELM
@@ -182,23 +222,6 @@
   )
 (add-hook 'text-mode-hook 'my-text-mode-hook)
 
-
-;; Font settings
-(require 'cl-lib)
-(defun font-candidate (&rest fonts)
-  "Return existing font which first match in FONTS."
-  (cl-find-if (lambda (f) (find-font (font-spec :name f))) fonts)
-)
-
-(when (display-graphic-p)
-  (set-face-attribute 'default nil :font
-                      (font-candidate ' "Inconsolata-12"
-                                        "Consolas-12"
-                                        "Monaco-12"
-                                        "DejaVu Sans Mono-12"
-                                        "Courier New-12")))
-
-
 ;; Recent file list (M-x recentf-open-file)
 (require 'recentf)
 (recentf-mode 1)
@@ -217,46 +240,8 @@
 (setq mode-require-final-newline nil)
 (global-ethan-wspace-mode 1)
 
-
-;; Automatic window resizing and fullscreen mode
-(defun set-frame-size-according-to-resolution ()
-  "Re-size Emacs according to the current screen capabilities."
-  (interactive)
-  (if window-system
-  (progn
-    ;; use 120 char wide window for largeish displays
-    ;; and smaller 80 column windows for smaller displays
-    ;; pick whatever numbers make sense for you
-    (if (> (x-display-pixel-width) 1280)
-           (add-to-list 'default-frame-alist (cons 'width 136))
-           (add-to-list 'default-frame-alist (cons 'width 136)))
-    ;; for the height, subtract a couple hundred pixels
-    ;; from the screen height (for panels, menubars and
-    ;; whatnot), then divide by the height of a char to
-    ;; get the height we want
-    (add-to-list 'default-frame-alist
-         (cons 'height (/ (+ (x-display-pixel-height) 60)
-                             (frame-char-height))))))
-)
-
-(defun toggle-fullscreen ()
-  "Toggle full screen on X11."
-  (interactive)
-  (when (eq window-system 'x)
-    (set-frame-parameter
-     nil 'fullscreen
-     (when (not (frame-parameter nil 'fullscreen)) 'fullboth)))
-)
-
-(defun fullscreen ()
-  "Send fullscreen messaeg to X11."
-  (x-send-client-message nil 0 nil "_NET_WM_STATE" 32
-                         '(2 "_NET_WM_STATE_FULLSCREEN" 0))
-)
-
 (setq-default indent-tabs-mode nil)
-(set-frame-size-according-to-resolution)
-(global-set-key (kbd "<f11>") 'toggle-fullscreen)
+(global-set-key (kbd "<f11>") 'toggle-frame-fullscreen)
 
 
 ;; Powerline!
