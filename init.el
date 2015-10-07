@@ -78,9 +78,9 @@
                          ethan-wspace
                          flycheck
                          highlight-symbol
-                         helm
-                         helm-ag
-                         helm-projectile
+                         ;helm
+                         ;helm-ag
+                         ;helm-projectile
                          json-mode
                          json-reformat
                          magit ;; (only on 24.4)
@@ -123,7 +123,7 @@
 
 ;; A side file to store informations that should not go on github
 (load-file "~/.emacs.d/confidential.el")
-(load-file "~/.emacs.d/experiment/helm-spotting.el")
+;(load-file "~/.emacs.d/experiment/helm-spotting.el")
 
 ;;
 ;; Common settings
@@ -157,19 +157,19 @@
 
 ;; HELM
 (require 'ido)
-(require 'helm)
-(require 'helm-config)
-(require 'helm-projectile)
+;(require 'helm)
+;(require 'helm-config)
+;(require 'helm-projectile)
 
-(setq helm-split-window-in-side-p           t
-      helm-buffers-fuzzy-matching           t
-      helm-ff-fuzzy-matching                t
-      helm-M-x-fuzzy-matching               t
-      helm-projectile-fuzzy-match           t
-      helm-move-to-line-cycle-in-source     t
-      helm-ff-search-library-in-sexp        t
-      helm-scroll-amount                    8
-      helm-ff-file-name-history-use-recentf t)
+;; (setq helm-split-window-in-side-p           t
+;;       helm-buffers-fuzzy-matching           t
+;;       helm-ff-fuzzy-matching                t
+;;       helm-M-x-fuzzy-matching               t
+;;       helm-projectile-fuzzy-match           t
+;;       helm-move-to-line-cycle-in-source     t
+;;       helm-ff-search-library-in-sexp        t
+;;       helm-scroll-amount                    8
+;;       helm-ff-file-name-history-use-recentf t)
 
 (ido-mode 1)
 ; (helm-mode 1)
@@ -177,16 +177,16 @@
 ;;; Global-map
 ;;
 ;;
-(global-set-key (kbd "M-x")       'helm-M-x)
-(global-set-key (kbd "M-y")       'helm-show-kill-ring)
-(global-set-key (kbd "C-x C-f")   'ido-find-file)
-(global-set-key (kbd "C-x b")     'helm-mini)
+;(global-set-key (kbd "M-x")       'helm-M-x)
+;(global-set-key (kbd "M-y")       'helm-show-kill-ring)
+;(global-set-key (kbd "C-x C-f")   'ido-find-file)
+;(global-set-key (kbd "C-x b")     'helm-mini)
 (global-set-key (kbd "C-c i")     'imenu)
-(global-set-key (kbd "C-'")       'helm-occur-from-isearch)
-(global-set-key (kbd "C-x C-p")   'helm-projectile-switch-project)
-(global-set-key (kbd "C-x C-o")   'helm-projectile-find-file)
-(global-set-key (kbd "C-x C-k")   'helm-projectile-ag)
-(global-set-key (kbd "C-<tab>")   'helm-projectile-find-other-file)
+;(global-set-key (kbd "C-'")       'helm-occur-from-isearch)
+(global-set-key (kbd "C-x C-p")   'projectile-switch-project)
+(global-set-key (kbd "C-x C-o")   'projectile-find-file)
+(global-set-key (kbd "C-x C-k")   'projectile-ag)
+(global-set-key (kbd "C-<tab>")   'projectile-find-other-file)
 (global-set-key (kbd "C-c C-s")   'magit-status)
 (global-set-key (kbd "C-c C-d")   'magit-diff)
 (global-set-key (kbd "C-c C-b")   'magit-blame)
@@ -401,8 +401,8 @@
 (add-hook 'prog-mode-hook 'my-prog-mode-hook)
 
 (set-face-foreground 'font-lock-warning-face "salmon2")
-(set-face-background 'helm-selection "salmon1")
-(set-face-foreground 'helm-selection "black")
+;(set-face-background 'helm-selection "salmon1")
+;(set-face-foreground 'helm-selection "black")
 
 ;;; init.el ends here
 ;;
