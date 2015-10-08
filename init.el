@@ -141,7 +141,7 @@
       (if (< emacs-major-version 22)
           (save-buffers-kill-terminal)
         (save-buffers-kill-emacs))
-    (message "Canceled exit")))
+    (suspend-frame)))
 
 (when window-system
   (global-set-key (kbd "C-x C-c") 'ask-before-closing))
