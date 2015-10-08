@@ -70,7 +70,8 @@
 
 (when (display-graphic-p)
   (set-face-attribute 'default nil :font
-                      (my-font-candidate ' "Inconsolata-12"
+                      (my-font-candidate ' "Inconsolata for Powerline-12"
+                                           "Inconsolata-12"
                                            "Consolas-12"
                                            "Monaco-12"
                                            "DejaVu Sans Mono-12"
