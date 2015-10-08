@@ -17,6 +17,39 @@
 ;;;
 ;;; Code:
 
+(defconst package-list '(ag
+                         clang-format
+                         cmake-mode
+                         company
+                         company-jedi
+                         ethan-wspace
+                         flycheck
+                         highlight-symbol
+                         ;helm
+                         ;helm-ag
+                         ;helm-projectile
+                         json-mode
+                         json-reformat
+                         magit ;; (only on 24.4)
+                         markdown-mode+
+                         multi
+                         multiple-cursors
+                         nose
+                         nyan-mode
+                         popup
+                         powerline
+                         projectile
+                         py-autopep8
+                         rainbow-mode
+                         realgud
+                         request
+                         sx
+                         use-package
+                         visual-regexp
+                         web-mode
+                         yascroll
+                         zenburn-theme))
+
 ;; Font settings
 (defun my-font-candidate-filter (f)
   (unless (find-font (font-spec :name f)) f))
@@ -71,37 +104,6 @@
 
 ;; Required packages (rtags needs to be installed separately)
 (require 'package)
-(defconst package-list '(clang-format
-                         cmake-mode
-                         company
-                         company-jedi
-                         ethan-wspace
-                         flycheck
-                         highlight-symbol
-                         ;helm
-                         ;helm-ag
-                         ;helm-projectile
-                         json-mode
-                         json-reformat
-                         magit ;; (only on 24.4)
-                         markdown-mode+
-                         multi
-                         multiple-cursors
-                         nose
-                         nyan-mode
-                         popup
-                         powerline
-                         projectile
-                         py-autopep8
-                         rainbow-mode
-                         realgud
-                         request
-                         sx
-                         use-package
-                         visual-regexp
-                         web-mode
-                         yascroll
-                         zenburn-theme))
 
 (add-to-list 'package-archives
              '("melpa" . "https://melpa.org/packages/"))
@@ -295,9 +297,9 @@
   (setq indent-tabs-mode nil)
   (highlight-symbol-mode)
   (setq mode-require-final-newline nil)
+  (setq flycheck-clang-language-standard "c++11")
   (define-key c-mode-base-map "\C-c\C-c" 'compile)
-  (define-key c-mode-base-map "\C-i" 'c-indent-line-or-region)
-)
+  (define-key c-mode-base-map "\C-i" 'c-indent-line-or-region))
 
 
 (add-hook 'c++-mode-hook 'my-c++-mode-hook)
@@ -327,8 +329,7 @@
   (define-key c-mode-base-map (kbd "M-[") 'rtags-location-stack-back)
   (define-key c-mode-base-map (kbd "M-]") 'rtags-location-stack-forward)
   (define-key c-mode-base-map (kbd "M-n") 'rtags-next-match)
-  (define-key c-mode-base-map (kbd "M-p") 'rtags-previous-match)
-)
+  (define-key c-mode-base-map (kbd "M-p") 'rtags-previous-match))
 
 (add-hook 'c++-mode-hook 'my-rtags-c++-mode-hook)
 
