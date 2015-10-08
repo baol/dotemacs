@@ -24,10 +24,8 @@
                          company-jedi
                          ethan-wspace
                          flycheck
+                         helm
                          highlight-symbol
-                         ;helm
-                         ;helm-ag
-                         ;helm-projectile
                          json-mode
                          json-reformat
                          magit ;; (only on 24.4)
@@ -52,9 +50,11 @@
 
 ;; Font settings
 (defun my-font-candidate-filter (f)
+  "Return the name of the font F if it exists or nil."
   (unless (find-font (font-spec :name f)) f))
 
 (defun remove-all (predic seq &optional res)
+  "Elements matching PREDIC are removed from SEQ (RES is for recursion)."
   (if (null seq)
       (reverse res)
       (cond ((and (not (null (car seq))) (listp (car seq)))
@@ -65,6 +65,7 @@
             (t (remove-all predic (cdr seq) (cons (car seq) res))))))
 
 (defun my-font-candidate (&rest fonts)
+  "Select the first available font from a list of FONTS."
   (car (remove-all #'my-font-candidate-filter fonts)))
 
 (when (display-graphic-p)
@@ -80,20 +81,20 @@
   "Re-size Emacs according to the current screen capabilities."
   (interactive)
   (if window-system
-  (progn
-    ;; use 120 char wide window for largeish displays
-    ;; and smaller 80 column windows for smaller displays
-    ;; pick whatever numbers make sense for you
-    (if (> (x-display-pixel-width) 1280)
-           (add-to-list 'default-frame-alist (cons 'width 136))
-           (add-to-list 'default-frame-alist (cons 'width 136)))
-    ;; for the height, subtract a couple hundred pixels
-    ;; from the screen height (for panels, menubars and
-    ;; whatnot), then divide by the height of a char to
-    ;; get the height we want
-    (add-to-list 'default-frame-alist
-         (cons 'height (/ (+ (x-display-pixel-height) 60)
-                          (frame-char-height)))))))
+      (progn
+        ;; use 120 char wide window for largeish displays
+        ;; and smaller 80 column windows for smaller displays
+        ;; pick whatever numbers make sense for you
+        (if (> (x-display-pixel-width) 1024)
+            (add-to-list 'default-frame-alist (cons 'width 136))
+          (add-to-list 'default-frame-alist (cons 'width 80)))
+        ;; for the height, subtract a couple hundred pixels
+        ;; from the screen height (for panels, menubars and
+        ;; whatnot), then divide by the height of a char to
+        ;; get the height we want
+        (add-to-list 'default-frame-alist
+                     (cons 'height (/ (+ (x-display-pixel-height) 60)
+                                      (frame-char-height)))))))
 
 (when (eq window-system 'x) ; seems to be buggy on mac os
   (set-frame-size-according-to-resolution))
@@ -107,8 +108,6 @@
 
 (add-to-list 'package-archives
              '("melpa" . "https://melpa.org/packages/"))
-;(add-to-list 'package-archives
-;             '("melpa-stable" . "https://stable.melpa.org/packages/"))
 (package-initialize)
 
 ;; Autoinstall packages
@@ -125,7 +124,11 @@
 
 ;; A side file to store informations that should not go on github
 (load-file "~/.emacs.d/confidential.el")
-;(load-file "~/.emacs.d/experiment/helm-spotting.el")
+(defun helm-spotting (query-string)
+  "Load and start helm-spotting with QUERY-STRING."
+  (interactive "sQuery: ")
+  (load-file "~/.emacs.d/experiment/helm-spotting.el")
+  (helm-spotting query-string))
 
 ;;
 ;; Common settings
@@ -159,32 +162,12 @@
 
 ;; HELM
 (require 'ido)
-;(require 'helm)
-;(require 'helm-config)
-;(require 'helm-projectile)
-
-;; (setq helm-split-window-in-side-p           t
-;;       helm-buffers-fuzzy-matching           t
-;;       helm-ff-fuzzy-matching                t
-;;       helm-M-x-fuzzy-matching               t
-;;       helm-projectile-fuzzy-match           t
-;;       helm-move-to-line-cycle-in-source     t
-;;       helm-ff-search-library-in-sexp        t
-;;       helm-scroll-amount                    8
-;;       helm-ff-file-name-history-use-recentf t)
-
 (ido-mode 1)
-; (helm-mode 1)
 
 ;;; Global-map
 ;;
 ;;
-;(global-set-key (kbd "M-x")       'helm-M-x)
-;(global-set-key (kbd "M-y")       'helm-show-kill-ring)
-;(global-set-key (kbd "C-x C-f")   'ido-find-file)
-;(global-set-key (kbd "C-x b")     'helm-mini)
 (global-set-key (kbd "C-c i")     'imenu)
-;(global-set-key (kbd "C-'")       'helm-occur-from-isearch)
 (global-set-key (kbd "C-x C-p")   'projectile-switch-project)
 (global-set-key (kbd "C-x C-o")   'projectile-find-file)
 (global-set-key (kbd "C-x C-k")   'projectile-ag)
@@ -225,25 +208,19 @@
 ;; Try M-q on a long paragraph in a text file or C++ comment!
 ;; Enables simple multicursor editing using C-d
 (defun my-text-mode-hook()
+  "My hook for all text modes."
   (turn-on-auto-fill)
-  ;; Multiple cursors mode
   (company-mode)
   (setq company-backends '(company-ispell company-files))
   (multiple-cursors-mode)
-  (global-set-key (kbd "C-d") 'mc/mark-next-symbol-like-this)
-  )
+  (global-set-key (kbd "C-d") 'mc/mark-next-symbol-like-this))
+
 (add-hook 'text-mode-hook 'my-text-mode-hook)
-
-;; Recent file list (M-x recentf-open-file)
-;(require 'recentf)
-;(recentf-mode 1)
-;(setq recentf-max-menu-items 25)
-
 
 ;; Enable interactive autocompletion of files and commands
 (projectile-global-mode)
 
-(setq projectile-switch-project-action 'projectile-vc)
+(defvar projectile-switch-project-action 'projectile-vc)
 
 ; (windmove-default-keybindings)
 
@@ -284,7 +261,7 @@
     (c-basic-offset . 4)))
 
 (c-add-style "my-cc-style" my-cc-style)
-(setq c-default-style "my-cc-style")
+(defvar c-default-style "my-cc-style")
 
 
 ;; C++ hook
@@ -311,7 +288,8 @@
 
 (defun my-rtags-c++-mode-hook ()
   "C++ setting for rtags."
-  ;; (rtags-start-process-maybe)
+  ;; (rtags-start-process-maybe) Please start the rdm process in a
+  ;; separate terminal, it is more responsive that way.
   (setq company-backends '(company-rtags company-files))
   (setq rtags-completions-enabled t
         rtags-display-current-error-as-tooltip t
@@ -333,13 +311,15 @@
 
 (add-hook 'c++-mode-hook 'my-rtags-c++-mode-hook)
 
-
 ;; Add header line with current method
 (setq rtags-track-container t)
-(add-hook 'find-file-hook (lambda ()
-                            (setq header-line-format (and (rtags-is-indexed)
-                                                          '(:eval
-                                                            rtags-cached-current-container)))))
+(add-hook 'find-file-hook
+          (lambda ()
+            (setq header-line-format
+                  (and
+                   (rtags-is-indexed)
+                   '(:eval
+                     rtags-cached-current-container)))))
 
 
 ;; clang-format intergation
@@ -371,13 +351,13 @@
   (setq company-backends '(company-jedi company-files))
   (define-key python-mode-map (kbd "M-.") 'jedi:goto-definition)
   (define-key python-mode-map (kbd "M-,") 'jedi:goto-definition-next)
-  (define-key python-mode-map (kbd "M-[") 'jedi:goto-definition-pop-marker)
-)
+  (define-key python-mode-map (kbd "M-[") 'jedi:goto-definition-pop-marker))
 
 (add-hook 'python-mode-hook 'my-python-hook)
 (setq jedi:complete-on-dot t)
 
 (defun my-elisp-mode-hook ()
+  "My hook for Emacs Lisp mode."
   (setq company-backends '(company-elisp company-files)))
 
 (add-hook 'emacs-lisp-mode-hook 'my-elisp-mode-hook)
@@ -394,16 +374,13 @@
   (hl-line-mode t)
   (company-mode)
   (flycheck-mode)
-  ;; Multiple cursors mode
   (multiple-cursors-mode)
   (define-key prog-mode-map (kbd "C-d") 'mc/mark-next-symbol-like-this)
-  (define-key prog-mode-map (kbd "M-/") 'company-complete)
-)
+  (define-key prog-mode-map (kbd "M-/") 'company-complete))
+
 (add-hook 'prog-mode-hook 'my-prog-mode-hook)
 
 (set-face-foreground 'font-lock-warning-face "salmon2")
-;(set-face-background 'helm-selection "salmon1")
-;(set-face-foreground 'helm-selection "black")
 
 ;;; init.el ends here
 ;;

@@ -3,6 +3,7 @@
 ;; based on (actually partly stolen from) helm-spotify.el package
 ;;
 (require 'json)
+(require 'helm)
 (require 'request)
 (require 'multi)
 
@@ -34,13 +35,13 @@
   "Get the Spotify app to play the album for this TRACK."
   (spotify-play-href (spotting-alist-get '(album uri) track)))
 
-(defun helm-spotting-tracks (query-string)
+(defun helm-spotting (query-string)
   (interactive "sQuery: ")
   (spotify-search-async "track" query-string))
 
-(defun helm-spotting (query-string)
-  (interactive "sQuery: ")
-  (spotify-search-async "album" query-string))
+;(defun helm-spotting (query-string)
+;  (interactive "sQuery: ")
+;  (spotify-search-async "album" query-string))
 
 (defun spotify-format (js-data)
   (mapcar (lambda (track) (cons (concat
