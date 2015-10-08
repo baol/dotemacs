@@ -25,12 +25,23 @@ well (and of course to create the index for your project).
 
 On Ubuntu you'll need some other packages to make it work:
 
-    sudo apt-get install markdown python-virtualenv clang-format-3.6
+    sudo apt-get install silversearcher-ag markdown
+       python-virtualenv clang-format-3.6
 
 ## note
 
 This repository is here for my convenience (setting up emacs quickly
 between machines) but it will turn your emacs into a powerful
 development environment for C++ as well!
+
+I'm trying to balance functionalities and start time, a nice trick is
+to add the following alias to your shell to start the client or the
+server automatically:
+
+    alias emacs='emacsclient -a emacs -c "$@"'
+
+On MacOS X it is slightly more convoluted:
+
+    alias emacs='/Applications/Emacs.app/Contents/MacOS/bin/emacsclient -a /Applications/Emacs.app/Contents/MacOS/Emacs -c "$@"'
 
 > -baol

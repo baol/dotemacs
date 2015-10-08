@@ -382,6 +382,8 @@
 
 (set-face-foreground 'font-lock-warning-face "salmon2")
 
+(server-start)
+
 ;;; init.el ends here
 ;;
 ;;  LocalWords:  init LocalWords baol's dotemacs rtags el
