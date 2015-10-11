@@ -33,18 +33,20 @@
                          multi
                          multiple-cursors
                          nose
-                         nyan-mode
                          popup
-                         powerline
                          projectile
                          py-autopep8
+                         rainbow-delimiters
                          rainbow-mode
                          realgud
                          request
+                         robe
+                         smart-mode-line
                          sx
                          use-package
                          visual-regexp
                          web-mode
+                         yaml-mode
                          yascroll
                          zenburn-theme))
 
@@ -76,6 +78,9 @@
                                            "Monaco-12"
                                            "DejaVu Sans Mono-12"
                                            "Courier New-12")))
+;; some useless alpha effects
+(set-frame-parameter (selected-frame) 'alpha '(99 85))
+(add-to-list 'default-frame-alist '(alpha 99 85))
 
 ;; Automatic window resizing and fullscreen mode
 (defun set-frame-size-according-to-resolution ()
@@ -134,6 +139,8 @@
 ;;
 ;; Common settings
 ;;
+
+(cua-mode)
 
 (defun ask-before-closing ()
   "Ask whether or not to close, and then close if y was pressed."
@@ -221,7 +228,7 @@
 ;; Enable interactive autocompletion of files and commands
 (projectile-global-mode)
 
-(defvar projectile-switch-project-action 'projectile-vc)
+(setq projectile-switch-project-action 'projectile-vc)
 
 ; (windmove-default-keybindings)
 
@@ -234,9 +241,10 @@
 (global-set-key (kbd "<f11>") 'toggle-frame-fullscreen)
 
 
-;; Powerline!
-(powerline-center-theme)
-;(nyan-mode)
+;; Smart line with cow powers!
+(setq sml/no-confirm-load-theme t)
+(sml/setup)
+(setq sml/theme 'respectful)
 
 ;; Realgud debugger
 ;(require 'realgud)
@@ -244,7 +252,6 @@
 ;;
 ;; Language specific settings
 ;;
-
 
 ;; Markdown
 (add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
@@ -262,7 +269,7 @@
     (c-basic-offset . 4)))
 
 (c-add-style "my-cc-style" my-cc-style)
-(defvar c-default-style "my-cc-style")
+(setq c-default-style "my-cc-style")
 
 
 ;; C++ hook
@@ -275,7 +282,6 @@
   (setq indent-tabs-mode nil)
   (highlight-symbol-mode)
   (setq mode-require-final-newline nil)
-  (setq flycheck-clang-language-standard "c++11")
   (define-key c-mode-base-map "\C-c\C-c" 'compile)
   (define-key c-mode-base-map "\C-i" 'c-indent-line-or-region))
 
@@ -308,7 +314,8 @@
   (define-key c-mode-base-map (kbd "M-[") 'rtags-location-stack-back)
   (define-key c-mode-base-map (kbd "M-]") 'rtags-location-stack-forward)
   (define-key c-mode-base-map (kbd "M-n") 'rtags-next-match)
-  (define-key c-mode-base-map (kbd "M-p") 'rtags-previous-match))
+  (define-key c-mode-base-map (kbd "M-p") 'rtags-previous-match)
+  (define-key c-mode-base-map (kbd "M-?") 'rtags-display-summary))
 
 (add-hook 'c++-mode-hook 'my-rtags-c++-mode-hook)
 
@@ -343,11 +350,13 @@
 
 
 ;; Python
-(defun my-python-hook()
+(defun my-python-hook ()
+  "Python mode customization."
   (unless (keymap-parent python-mode-map)
     (set-keymap-parent python-mode-map prog-mode-map))
   (jedi:setup)
   (eldoc-mode)
+  (flycheck-mode)
   (setq mode-require-final-newline nil)
   (setq company-backends '(company-jedi company-files))
   (define-key python-mode-map (kbd "M-.") 'jedi:goto-definition)
@@ -357,8 +366,20 @@
 (add-hook 'python-mode-hook 'my-python-hook)
 (setq jedi:complete-on-dot t)
 
+(defun my-ruby-hook ()
+  "Ruby mode customization."
+  (flycheck-mode)
+  (robe-mode)
+  (eldoc-mode)
+  (eval-after-load 'company
+    '(setq company-backend '(company-robe company-files))))
+
+
+(add-hook 'ruby-mode-hook 'my-ruby-hook)
+
 (defun my-elisp-mode-hook ()
   "My hook for Emacs Lisp mode."
+  (flycheck-mode)
   (setq company-backends '(company-elisp company-files)))
 
 (add-hook 'emacs-lisp-mode-hook 'my-elisp-mode-hook)
@@ -372,9 +393,10 @@
           1 font-lock-warning-face t)))
   (highlight-symbol-mode)
   (rainbow-mode)
+  (rainbow-delimiters-mode)
   (hl-line-mode t)
   (company-mode)
-  (flycheck-mode)
+  (bug-reference-prog-mode)
   (multiple-cursors-mode)
   (define-key prog-mode-map (kbd "C-d") 'mc/mark-next-symbol-like-this)
   (define-key prog-mode-map (kbd "M-/") 'company-complete))
