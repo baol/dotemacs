@@ -22,8 +22,10 @@
                          cmake-mode
                          company
                          company-jedi
+                         diff-hl
                          ethan-wspace
                          flycheck
+                         git-timemachine
                          helm
                          highlight-symbol
                          json-mode
@@ -49,6 +51,27 @@
                          yaml-mode
                          yascroll
                          zenburn-theme))
+
+;; Required packages (rtags needs to be installed separately)
+(require 'package)
+
+(add-to-list 'package-archives
+             '("melpa" . "https://melpa.org/packages/"))
+(package-initialize)
+
+;; Autoinstall packages
+(unless package-archive-contents
+  (package-refresh-contents))
+(dolist (package package-list)
+  (unless (package-installed-p package)
+    (package-install package)))
+
+
+;; Add some local include paths
+(add-to-list 'load-path "/usr/local/share/emacs/site-lisp/rtags/")
+
+;; A side file to store informations that should not go on github
+(load-file "~/.emacs.d/confidential.el")
 
 ;; Font settings
 (defun my-font-candidate-filter (f)
@@ -99,7 +122,7 @@
         ;; whatnot), then divide by the height of a char to
         ;; get the height we want
         (add-to-list 'default-frame-alist
-                     (cons 'height (/ (+ (x-display-pixel-height) 60)
+                     (cons 'height (/ (+ (x-display-pixel-height) 200)
                                       (frame-char-height)))))))
 
 (when (eq window-system 'x) ; seems to be buggy on mac os
@@ -109,27 +132,6 @@
 (unless (keymap-parent lisp-mode-shared-map)
   (set-keymap-parent lisp-mode-shared-map prog-mode-map))
 
-;; Required packages (rtags needs to be installed separately)
-(require 'package)
-
-(add-to-list 'package-archives
-             '("melpa" . "https://melpa.org/packages/"))
-(package-initialize)
-
-;; Autoinstall packages
-(unless package-archive-contents
-  (package-refresh-contents))
-(dolist (package package-list)
-  (unless (package-installed-p package)
-    (package-install package)))
-
-
-;; Add some local include paths
-(add-to-list 'load-path "/usr/local/share/emacs/site-lisp/rtags/")
-
-
-;; A side file to store informations that should not go on github
-(load-file "~/.emacs.d/confidential.el")
 (defun helm-spotting (query-string)
   "Load and start helm-spotting with QUERY-STRING."
   (interactive "sQuery: ")
@@ -246,9 +248,6 @@
 (sml/setup)
 (setq sml/theme 'respectful)
 
-;; Realgud debugger
-;(require 'realgud)
-
 ;;
 ;; Language specific settings
 ;;
@@ -258,8 +257,8 @@
 
 
 ;; Robot Framework editing mode
-(load-file "~/.emacs.d/robot-mode/robot-mode.el")
-(add-to-list 'auto-mode-alist '("\\.robot\\'" . robot-mode))
+;(load-file "~/.emacs.d/robot-mode/robot-mode.el")
+;(add-to-list 'auto-mode-alist '("\\.robot\\'" . robot-mode))
 
 
 ;; Setup C++ like coding style
@@ -398,6 +397,8 @@
   (company-mode)
   (bug-reference-prog-mode)
   (multiple-cursors-mode)
+  (diff-hl-mode)
+  (diff-hl-flydiff-mode)
   (define-key prog-mode-map (kbd "C-d") 'mc/mark-next-symbol-like-this)
   (define-key prog-mode-map (kbd "M-/") 'company-complete))
 
@@ -405,7 +406,7 @@
 
 (set-face-foreground 'font-lock-warning-face "salmon2")
 
-(server-start)
+;; (server-start)
 
 ;;; init.el ends here
 ;;
