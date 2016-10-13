@@ -76,6 +76,8 @@
 ;; load the color theme
 (load-theme 'paper t)
 
+(require 'use-package)
+
 ;; Font settings
 (defun my-font-candidate-filter (f)
   "Return the name of the font F if it exists or nil."
@@ -98,10 +100,10 @@
 
 (when (display-graphic-p)
   (set-face-attribute 'default nil :font
-                      (my-font-candidate ' "Inconsolata for Powerline-12"
+                      (my-font-candidate ' "Source Code Pro-14"
                                            "Inconsolata-12"
                                            "Consolas-12"
-                                           "Monaco-12"
+                                           "Monaco-14"
                                            "DejaVu Sans Mono-12"
                                            "Courier New-12")))
 ;; some useless alpha effects
@@ -403,6 +405,51 @@
 
 (set-face-foreground 'font-lock-warning-face "salmon2")
 
+(ac-config-default)
+(require 'auto-complete-config)
+
+(use-package go-mode
+  :mode "\\.go\\(\\'\\|\\.\\)"
+
+  :config
+  (progn
+
+    (setenv "GOPATH" "/Users/mirko/dev/go/")
+
+    ;; -- Use the style of `gofmt -tabs=false -tabwidth=2` to format code
+    (add-hook 'go-mode-hook (lambda ()
+                              (setq compile-command "go build -v && go test -v && go vet && golint")
+                              (define-key (current-local-map) "\C-c\C-c" 'compile)
+                              (setq tab-width 2)
+                              (setq indent-tabs-mode nil) ))
+
+    (setq gofmt-command (cond
+                         ((executable-find "goimports")
+                          "goimports")
+                         (t "gofmt")))
+
+    ;; Call Gofmt before saving
+    (add-hook 'before-save-hook 'gofmt-before-save)
+
+    ;; --
+
+    ;; (use-package go-stacktracer
+    ;;   :commands (go-stacktracer-region))
+
+    (use-package go-eldoc
+       :init
+       (progn
+         (add-hook 'go-mode-hook 'go-eldoc-setup)))
+
+    (use-package go-autocomplete
+      :init
+      (progn
+        (use-package auto-complete))
+
+      (bind-key "M-." 'godef-jump go-mode-map)
+      )
+    )
+  )
+
 (server-start)
 
-;;; init.el ends here
