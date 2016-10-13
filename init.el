@@ -17,6 +17,7 @@
 ;;;
 ;;; Code:
 
+(setq debug-on-quit 't)
 (defconst package-list '(ag
                          clang-format
                          cmake-mode
@@ -35,6 +36,7 @@
                          multi
                          multiple-cursors
                          nose
+                         paper-theme
                          popup
                          projectile
                          py-autopep8
@@ -49,8 +51,7 @@
                          visual-regexp
                          web-mode
                          yaml-mode
-                         yascroll
-                         zenburn-theme))
+                         yascroll))
 
 ;; Required packages (rtags needs to be installed separately)
 (require 'package)
@@ -66,12 +67,14 @@
   (unless (package-installed-p package)
     (package-install package)))
 
-
 ;; Add some local include paths
 (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/rtags/")
 
 ;; A side file to store informations that should not go on github
 (load-file "~/.emacs.d/confidential.el")
+
+;; load the color theme
+(load-theme 'paper t)
 
 ;; Font settings
 (defun my-font-candidate-filter (f)
@@ -102,8 +105,8 @@
                                            "DejaVu Sans Mono-12"
                                            "Courier New-12")))
 ;; some useless alpha effects
-(set-frame-parameter (selected-frame) 'alpha '(99 85))
-(add-to-list 'default-frame-alist '(alpha 99 85))
+;; (set-frame-parameter (selected-frame) 'alpha '(99 85))
+;; (add-to-list 'default-frame-alist '(alpha 99 85))
 
 ;; Automatic window resizing and fullscreen mode
 (defun set-frame-size-according-to-resolution ()
@@ -122,7 +125,7 @@
         ;; whatnot), then divide by the height of a char to
         ;; get the height we want
         (add-to-list 'default-frame-alist
-                     (cons 'height (/ (+ (x-display-pixel-height) 200)
+                     (cons 'height (/ (- (x-display-pixel-height) 250)
                                       (frame-char-height)))))))
 
 (when (eq window-system 'x) ; seems to be buggy on mac os
@@ -156,7 +159,6 @@
 (when window-system
   (global-set-key (kbd "C-x C-c") 'ask-before-closing))
 
-
 (defun my-terminal-visible-bell ()
   "A friendlier visual bell effect."
   (invert-face 'fringe)
@@ -170,7 +172,7 @@
 (tool-bar-mode -1)
 (yascroll-bar-mode)
 
-;; HELM
+;; no HELM
 (require 'ido)
 (ido-mode 1)
 
@@ -192,14 +194,10 @@
 (global-set-key (kbd "C-c C-r")   'magit-rebase)
 (global-set-key (kbd "C-c p")     'magit-push)
 
-;; (no)colors!
-(require 'zenburn-theme)
-
 ;; Some generic settings
 (setq inhibit-startup-message t)
 (show-paren-mode t)
 (setq visible-bell t)
-
 
 ;; Increas/decrease font size with C-+, C--
 (global-set-key (kbd "C-+") 'text-scale-increase)
@@ -208,11 +206,9 @@
 (global-set-key (kbd "C-\-") 'text-scale-decrease)
 (global-set-key (kbd "<C-kp-subtract>") 'text-scale-decrease)
 
-
 ;; These are damn useful (on older emacs versions at least)
 (put 'upcase-region 'disabled nil)
 (put 'downcase-region 'disabled nil)
-
 
 ;; Turn on auto-fill in `text-mode' and derived modes.
 ;; Try M-q on a long paragraph in a text file or C++ comment!
@@ -242,7 +238,6 @@
 (setq-default indent-tabs-mode nil)
 (global-set-key (kbd "<f11>") 'toggle-frame-fullscreen)
 
-
 ;; Smart line with cow powers!
 (setq sml/no-confirm-load-theme t)
 (sml/setup)
@@ -255,11 +250,9 @@
 ;; Markdown
 (add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
 
-
 ;; Robot Framework editing mode
 ;(load-file "~/.emacs.d/robot-mode/robot-mode.el")
 ;(add-to-list 'auto-mode-alist '("\\.robot\\'" . robot-mode))
-
 
 ;; Setup C++ like coding style
 (defconst my-cc-style
@@ -270,7 +263,6 @@
 (c-add-style "my-cc-style" my-cc-style)
 (setq c-default-style "my-cc-style")
 
-
 ;; C++ hook
 (defun my-c++-mode-hook ()
   "My C++ setting."
@@ -279,14 +271,11 @@
     (set-keymap-parent c-mode-base-map prog-mode-map))
   ;; (eldoc-mode)
   (setq indent-tabs-mode nil)
-  (highlight-symbol-mode)
   (setq mode-require-final-newline nil)
   (define-key c-mode-base-map "\C-c\C-c" 'compile)
   (define-key c-mode-base-map "\C-i" 'c-indent-line-or-region))
 
-
 (add-hook 'c++-mode-hook 'my-c++-mode-hook)
-
 
 ;; RTAGS is Great for C++ navigation, refactoring and autocompletion
 (require 'rtags)
@@ -328,11 +317,9 @@
                    '(:eval
                      rtags-cached-current-container)))))
 
-
 ;; clang-format intergation
 (require 'clang-format)
 (define-key c-mode-base-map (kbd "M-q") (function clang-format-region))
-
 
 ;; Extend C++ extensions
 (add-to-list 'auto-mode-alist '("\\.cc\\'" . c++-mode))
@@ -342,11 +329,9 @@
 (add-to-list 'auto-mode-alist '("\\.hpp\\'" . c++-mode))
 (add-to-list 'auto-mode-alist '("\\.inl\\'" . c++-mode))
 
-
 ;; Better www mode with javascript, css, php and html support, all on
 ;; the same file!
 (require 'web-mode)
-
 
 ;; Python
 (defun my-python-hook ()
@@ -371,8 +356,7 @@
   (robe-mode)
   (eldoc-mode)
   (eval-after-load 'company
-    '(setq company-backend '(company-robe company-files))))
-
+    '(setq company-backends '(company-robe company-files))))
 
 (add-hook 'ruby-mode-hook 'my-ruby-hook)
 
@@ -383,6 +367,16 @@
 
 (add-hook 'emacs-lisp-mode-hook 'my-elisp-mode-hook)
 
+(defun my-cmake-hook ()
+  "CMake mode customization."
+  (eval-after-load 'company
+    '(setq company-backends '(company-cmake company-files))))
+
+
+(add-hook 'cmake-mode-hook 'my-cmake-hook)
+
+(add-to-list 'auto-mode-alist '("\\.mod\\'" . gmpl-mode))
+(add-to-list 'auto-mode-alist '("\\.dat\\'" . gmpl-mode))
 
 ;; common settings for all programming modes
 (defun my-prog-mode-hook()
@@ -390,7 +384,7 @@
   (font-lock-add-keywords
    nil '(("\\<\\(FIX\\(ME\\)?\\|TODO\\|HACK\\|REFACTOR\\|NOCOMMIT\\)"
           1 font-lock-warning-face t)))
-  (highlight-symbol-mode)
+  ; (highlight-symbol-mode)
   (rainbow-mode)
   (rainbow-delimiters-mode)
   (hl-line-mode t)
@@ -406,8 +400,6 @@
 
 (set-face-foreground 'font-lock-warning-face "salmon2")
 
-;; (server-start)
+(server-start)
 
 ;;; init.el ends here
-;;
-;;  LocalWords:  init LocalWords baol's dotemacs rtags el
