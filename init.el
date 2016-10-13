@@ -164,8 +164,8 @@
   (invert-face 'fringe)
   (run-with-timer 0.15 nil 'invert-face 'fringe))
 
-(setq visible-bell nil
-      ring-bell-function 'my-terminal-visible-bell)
+(setq-default visible-bell nil
+              ring-bell-function 'my-terminal-visible-bell)
 
 ;; setting up scrollbar and visual bell
 (scroll-bar-mode -1)
@@ -217,7 +217,7 @@
   "My hook for all text modes."
   (turn-on-auto-fill)
   (company-mode)
-  (setq company-backends '(company-ispell company-files))
+  (setq company-backends '(company-ispell company-files (company-abbrev company-dabbrev)))
   (multiple-cursors-mode)
   (global-set-key (kbd "C-d") 'mc/mark-next-symbol-like-this))
 
@@ -226,7 +226,7 @@
 ;; Enable interactive autocompletion of files and commands
 (projectile-global-mode)
 
-(setq projectile-switch-project-action 'projectile-vc)
+(setq-default projectile-switch-project-action 'projectile-vc)
 
 ; (windmove-default-keybindings)
 
@@ -235,13 +235,13 @@
 (setq mode-require-final-newline nil)
 (global-ethan-wspace-mode 1)
 
-(setq-default indent-tabs-mode nil)
+(setq indent-tabs-mode nil)
 (global-set-key (kbd "<f11>") 'toggle-frame-fullscreen)
 
 ;; Smart line with cow powers!
-(setq sml/no-confirm-load-theme t)
+(setq-default sml/no-confirm-load-theme t)
 (sml/setup)
-(setq sml/theme 'respectful)
+(setq-default sml/theme 'respectful)
 
 ;;
 ;; Language specific settings
@@ -261,7 +261,7 @@
     (c-basic-offset . 4)))
 
 (c-add-style "my-cc-style" my-cc-style)
-(setq c-default-style "my-cc-style")
+(setq-default c-default-style "my-cc-style")
 
 ;; C++ hook
 (defun my-c++-mode-hook ()
@@ -285,12 +285,13 @@
   "C++ setting for rtags."
   ;; (rtags-start-process-maybe) Please start the rdm process in a
   ;; separate terminal, it is more responsive that way.
-  (setq company-backends '(company-rtags company-files))
+  (setq company-backends '((company-keywords company-rtags company-files company-dabbrev-code)))
   (setq rtags-completions-enabled t
         rtags-display-current-error-as-tooltip t
         rtags-autostart-diagnostics t
         rtags-show-containing-function t
-        rtags-track-container t)
+        rtags-track-container t
+        company-rtags-max-wait 500)
   (define-key c-mode-base-map (kbd "M-.") 'rtags-find-symbol-at-point)
   (define-key c-mode-base-map (kbd "M-,") 'rtags-find-references-at-point)
   (define-key c-mode-base-map (kbd "M-;") 'rtags-find-file)
@@ -342,10 +343,11 @@
   (eldoc-mode)
   (flycheck-mode)
   (setq mode-require-final-newline nil)
-  (setq company-backends '(company-jedi company-files))
+  (setq company-backends '((company-jedi company-files company-keywords company-abbrev company-dabbrev)))
   (define-key python-mode-map (kbd "M-.") 'jedi:goto-definition)
   (define-key python-mode-map (kbd "M-,") 'jedi:goto-definition-next)
-  (define-key python-mode-map (kbd "M-[") 'jedi:goto-definition-pop-marker))
+  (define-key python-mode-map (kbd "M-[") 'jedi:goto-definition-pop-marker)
+  )
 
 (add-hook 'python-mode-hook 'my-python-hook)
 (setq jedi:complete-on-dot t)
@@ -363,7 +365,8 @@
 (defun my-elisp-mode-hook ()
   "My hook for Emacs Lisp mode."
   (flycheck-mode)
-  (setq company-backends '(company-elisp company-files)))
+  (setq company-backends '((company-elisp company-files company-keywords company-abbrev company-dabbrev)))
+  )
 
 (add-hook 'emacs-lisp-mode-hook 'my-elisp-mode-hook)
 
