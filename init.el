@@ -33,11 +33,9 @@
                          json-reformat
                          magit ;; (only on 24.4)
                          markdown-mode+
-                         multi
-                         multiple-cursors
+                         minimap
                          nose
-                         paper-theme
-                         popup
+                         atom-dark-theme
                          projectile
                          py-autopep8
                          rainbow-delimiters
@@ -69,12 +67,13 @@
 
 ;; Add some local include paths
 (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/rtags/")
+(add-to-list 'load-path "/usr/local/share/emacs/site-lisp/")
 
 ;; A side file to store informations that should not go on github
 (load-file "~/.emacs.d/confidential.el")
 
 ;; load the color theme
-(load-theme 'paper t)
+(load-theme 'atom-dark t)
 
 (require 'use-package)
 
@@ -147,6 +146,8 @@
 ;; Common settings
 ;;
 
+(setq-default indent-tabs-mode nil)
+
 (cua-mode)
 
 (defun ask-before-closing ()
@@ -173,6 +174,11 @@
 (scroll-bar-mode -1)
 (tool-bar-mode -1)
 (yascroll-bar-mode)
+
+;;; Minimap (w/flycheck)
+(minimap-mode)
+(setq-default minimap-update-delay 0)
+(run-with-idle-timer 0.5 t 'minimap-sync-overlays)
 
 ;; no HELM
 (require 'ido)
@@ -220,7 +226,6 @@
   (turn-on-auto-fill)
   (company-mode)
   (setq company-backends '(company-ispell company-files (company-abbrev company-dabbrev)))
-  (multiple-cursors-mode)
   (global-set-key (kbd "C-d") 'mc/mark-next-symbol-like-this))
 
 (add-hook 'text-mode-hook 'my-text-mode-hook)
@@ -235,7 +240,6 @@
 ;; Check whitespaces wisely in all buffers
 (require 'ethan-wspace)
 (setq mode-require-final-newline nil)
-(global-ethan-wspace-mode 1)
 
 (setq indent-tabs-mode nil)
 (global-set-key (kbd "<f11>") 'toggle-frame-fullscreen)
@@ -272,8 +276,8 @@
   (unless (keymap-parent c-mode-base-map)
     (set-keymap-parent c-mode-base-map prog-mode-map))
   ;; (eldoc-mode)
+  (ethan-wspace-mode)
   (setq indent-tabs-mode nil)
-  (setq mode-require-final-newline nil)
   (define-key c-mode-base-map "\C-c\C-c" 'compile)
   (define-key c-mode-base-map "\C-i" 'c-indent-line-or-region))
 
@@ -344,6 +348,8 @@
   (jedi:setup)
   (eldoc-mode)
   (flycheck-mode)
+  (setq indent-tabs-mode nil)
+  (ethan-wspace-mode)
   (setq mode-require-final-newline nil)
   (setq company-backends '((company-jedi company-files company-keywords company-abbrev company-dabbrev)))
   (define-key python-mode-map (kbd "M-.") 'jedi:goto-definition)
@@ -367,6 +373,7 @@
 (defun my-elisp-mode-hook ()
   "My hook for Emacs Lisp mode."
   (flycheck-mode)
+  (ethan-wspace-mode)
   (setq company-backends '((company-elisp company-files company-keywords company-abbrev company-dabbrev)))
   )
 
@@ -374,9 +381,10 @@
 
 (defun my-cmake-hook ()
   "CMake mode customization."
+  (ethan-wspace-mode)
+  (setq indent-tabs-mode nil)
   (eval-after-load 'company
     '(setq company-backends '(company-cmake company-files))))
-
 
 (add-hook 'cmake-mode-hook 'my-cmake-hook)
 
@@ -395,33 +403,31 @@
   (hl-line-mode t)
   (company-mode)
   (bug-reference-prog-mode)
-  (multiple-cursors-mode)
   (diff-hl-mode)
   (diff-hl-flydiff-mode)
   (define-key prog-mode-map (kbd "C-d") 'mc/mark-next-symbol-like-this)
   (define-key prog-mode-map (kbd "M-/") 'company-complete))
 
+
 (add-hook 'prog-mode-hook 'my-prog-mode-hook)
 
 (set-face-foreground 'font-lock-warning-face "salmon2")
 
-(ac-config-default)
-(require 'auto-complete-config)
-
 (use-package go-mode
-  :mode "\\.go\\(\\'\\|\\.\\)"
-
+  :mode "\\.go"
+  :ensure t
   :config
   (progn
 
-    (setenv "GOPATH" "/Users/mirko/dev/go/")
+    ;; Tell ethan to disregard tabs this time
+    (setq ethan-wspace-errors (remove 'tabs ethan-wspace-errors))
 
-    ;; -- Use the style of `gofmt -tabs=false -tabwidth=2` to format code
     (add-hook 'go-mode-hook (lambda ()
+                              (flycheck-mode)
                               (setq compile-command "go build -v && go test -v && go vet && golint")
                               (define-key (current-local-map) "\C-c\C-c" 'compile)
-                              (setq tab-width 2)
-                              (setq indent-tabs-mode nil) ))
+                              (setq tab-width 4)
+                              (setq indent-tabs-mode 't)))
 
     (setq gofmt-command (cond
                          ((executable-find "goimports")
@@ -431,25 +437,25 @@
     ;; Call Gofmt before saving
     (add-hook 'before-save-hook 'gofmt-before-save)
 
-    ;; --
-
     ;; (use-package go-stacktracer
     ;;   :commands (go-stacktracer-region))
 
     (use-package go-eldoc
-       :init
-       (progn
-         (add-hook 'go-mode-hook 'go-eldoc-setup)))
-
-    (use-package go-autocomplete
+      :ensure t
       :init
       (progn
-        (use-package auto-complete))
+        (add-hook 'go-mode-hook 'go-eldoc-setup)))
 
+    (use-package company-go
+      :init
       (bind-key "M-." 'godef-jump go-mode-map)
+      (bind-key "M-[" 'pop-tag-mark go-mode-map)
+      (setq company-backends '(company-go))
       )
     )
   )
 
-(server-start)
+(load "server")
+(unless (server-running-p) (server-start))
 
+;;; init.el ends here
