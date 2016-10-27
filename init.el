@@ -27,7 +27,6 @@
                          ethan-wspace
                          flycheck
                          git-timemachine
-                         helm
                          highlight-symbol
                          json-mode
                          json-reformat
@@ -44,9 +43,7 @@
                          request
                          robe
                          smart-mode-line
-                         sx
                          use-package
-                         visual-regexp
                          web-mode
                          yaml-mode
                          yascroll))
@@ -136,11 +133,11 @@
 (unless (keymap-parent lisp-mode-shared-map)
   (set-keymap-parent lisp-mode-shared-map prog-mode-map))
 
-(defun helm-spotting (query-string)
-  "Load and start helm-spotting with QUERY-STRING."
-  (interactive "sQuery: ")
-  (load-file "~/.emacs.d/experiment/helm-spotting.el")
-  (helm-spotting query-string))
+;; (defun helm-spotting (query-string)
+;;   "Load and start helm-spotting with QUERY-STRING."
+;;   (interactive "sQuery: ")
+;;   (load-file "~/.emacs.d/experiment/helm-spotting.el")
+;;   (helm-spotting query-string))
 
 ;;
 ;; Common settings
@@ -397,7 +394,7 @@
   (font-lock-add-keywords
    nil '(("\\<\\(FIX\\(ME\\)?\\|TODO\\|HACK\\|REFACTOR\\|NOCOMMIT\\)"
           1 font-lock-warning-face t)))
-  ; (highlight-symbol-mode)
+  (highlight-symbol-mode)
   (rainbow-mode)
   (rainbow-delimiters-mode)
   (hl-line-mode t)
